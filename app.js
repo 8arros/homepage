@@ -1136,6 +1136,9 @@ async function addIcsCalendar() {
 
 document.getElementById('icsModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeModal('icsModal'); });
 document.getElementById('todoistModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeTodoistSettings(); });
+document.getElementById('caldavModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeModal('caldavModal'); });
+document.getElementById('addTaskModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeModal('addTaskModal'); });
+document.getElementById('addEventModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeModal('addEventModal'); });
 
 // ── VIEW SWITCHER ──
 let currentView = 'home';
