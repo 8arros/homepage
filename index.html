@@ -4097,6 +4097,28 @@ function reinitFromKV() {
   loadTodoist();
 }
 
+// ── Expose functions to global scope for HTML onclick handlers ──
+Object.assign(window, {
+  addFeed, addIcsCalendar, addSportsCalendar,
+  aeCalNav, aePickDate, aePickTime, aePickCal,
+  aeToggleCal, aeToggleCalDropdown, aeToggleTime,
+  atCalNav, atClearDate, atClearTime, atPickPriority, atPickProject,
+  atSelectDate, atToggleCal, atToggleDropdown, atToggleTime,
+  calGoToday, calNextMonth, calPrevMonth,
+  cancelFeedEdit, clearAllData, clearChat, clearNotes, closeModal,
+  closeTodoistSettings, completeTodoistTask, cycleFilter, cycleFilterBack,
+  deleteFeed, deleteIcsCal, deleteLink, deleteSportsCal,
+  doExport, doImport, editFeed,
+  openAddEvent, openAddTask, openEditLink, openFeedManager,
+  openIcsManager, openTodoistSettings, openWeatherManager,
+  refreshAllBriefings, resetFilter, resetFeedStatus,
+  saveAddEvent, saveAddTask, saveApiKey, saveCaldavSettings,
+  saveLink, saveNotes, saveTodoistToken, searchWeatherCity, sendMessage,
+  switchBriefingTab, switchCalModalTab,
+  toggleApiKey, toggleNotesModal, updateIcsColor, verifyFeed,
+  chatKeydown,
+});
+
 } // end initApp()
 
 </script>
