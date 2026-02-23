@@ -2157,16 +2157,18 @@ function addSportsCalendar() {
   const url  = document.getElementById('sportsUrl').value.trim();
   const name = document.getElementById('sportsName').value.trim();
   const status = document.getElementById('sportsStatus');
-  if (!url) { status.textContent = 'URL is required'; status.className = 'feed-status feed-err'; return; }
-  if (!name) { status.textContent = 'Name is required'; status.className = 'feed-status feed-err'; return; }
+  if (!url) { status.textContent = 'URL is required'; status.className = 'feed-status visible st-error'; return; }
+  if (!name) { status.textContent = 'Name is required'; status.className = 'feed-status visible st-error'; return; }
+  if (!url.startsWith('http')) { status.textContent = 'URL must start with http'; status.className = 'feed-status visible st-error'; return; }
+  if (name.startsWith('http')) { status.textContent = 'Name should not be a URL — check if fields are swapped'; status.className = 'feed-status visible st-error'; return; }
   const cals = loadSportsCalendars();
-  if (cals.some(c => c.url === url)) { status.textContent = 'Already added'; status.className = 'feed-status feed-err'; return; }
+  if (cals.some(c => c.url === url)) { status.textContent = 'Already added'; status.className = 'feed-status visible st-error'; return; }
   cals.push({ name, url, color: '#808080' });
   saveSportsCalendars(cals);
   document.getElementById('sportsUrl').value = '';
   document.getElementById('sportsName').value = '';
-  status.textContent = 'Added!';
-  status.className = 'feed-status feed-ok';
+  status.textContent = '';
+  status.className = 'feed-status';
   renderSportsList();
   sportsRawCache = []; // force reload on next briefing
 }
