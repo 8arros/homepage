@@ -2526,13 +2526,15 @@ let aeState = {
 function aeRenderCalendarOptions() {
   const el = document.getElementById('aeCalOptions');
   if (!el) return;
-  if (!aeCalendars.length) {
+  const filtered = aeCalendars.filter(c => c.displayName !== 'DEFAULT_TASK_CALENDAR');
+  if (!filtered.length) {
     el.innerHTML = '<div style="padding:.4rem .6rem;font-size:.82rem;color:var(--text-lt)">No calendars found. Check credentials.</div>';
     return;
   }
-  el.innerHTML = aeCalendars.map((c, i) =>
-    `<div class="at-list-item" onclick="aePickCal(${i})">${c.displayName}</div>`
-  ).join('');
+  el.innerHTML = filtered.map((c, i) => {
+    const origIdx = aeCalendars.indexOf(c);
+    return `<div class="at-list-option" onclick="aePickCal(${origIdx})">${c.displayName}</div>`;
+  }).join('');
 }
 
 function aePickCal(i) {
