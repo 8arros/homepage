@@ -1136,9 +1136,15 @@ async function addIcsCalendar() {
 
 document.getElementById('icsModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeModal('icsModal'); });
 document.getElementById('todoistModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeTodoistSettings(); });
-document.getElementById('caldavModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeModal('caldavModal'); });
-document.getElementById('addTaskModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeModal('addTaskModal'); });
-document.getElementById('addEventModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeModal('addEventModal'); });
+
+// Close any modal-overlay when clicking outside the modal
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay') && e.target.classList.contains('open')) {
+    const id = e.target.id;
+    if (id === 'todoistModal') closeTodoistSettings();
+    else closeModal(id);
+  }
+});
 
 // ── VIEW SWITCHER ──
 let currentView = 'home';
