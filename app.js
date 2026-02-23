@@ -2004,8 +2004,10 @@ ${periodRules}
 async function loadBriefing(force = false) {
   const apiKey = getApiKey();
   if(!apiKey) {
-    document.getElementById('briefingBody').innerHTML =
-      '<div class="td-empty" style="padding-top:1rem">Configure your Claude API key to generate the briefing.</div>';
+    if (activeBriefingTab === 'daily') {
+      document.getElementById('briefingBody').innerHTML =
+        '<div class="td-empty" style="padding-top:1rem">Configure your Claude API key to generate the briefing.</div>';
+    }
     return;
   }
 
@@ -2022,7 +2024,7 @@ async function loadBriefing(force = false) {
 
   const body = document.getElementById('briefingBody');
   const btn  = document.getElementById('briefingRefreshBtn');
-  body.innerHTML = '<div class="td-empty" style="padding-top:1rem;font-style:italic">Generating briefing…</div>';
+  if (activeBriefingTab === 'daily') body.innerHTML = '<div class="td-empty" style="padding-top:1rem;font-style:italic">Generating briefing…</div>';
   if(btn) btn.disabled = true;
 
   try {
@@ -2047,7 +2049,7 @@ async function loadBriefing(force = false) {
     KVStore.setItem(BRIEFING_DATE_KEY, cacheKey);
     renderBriefing(text);
   } catch(e) {
-    body.innerHTML = '<div class="td-empty" style="padding-top:1rem;color:var(--err)">Error generating briefing.</div>';
+    if (activeBriefingTab === 'daily') body.innerHTML = '<div class="td-empty" style="padding-top:1rem;color:var(--err)">Error generating briefing.</div>';
     console.error('Briefing error:', e);
   } finally {
     if(btn) btn.disabled = false;
@@ -2294,7 +2296,7 @@ async function loadSportsBriefing(force = false) {
 
   const body = document.getElementById('briefingBody');
   const btn  = document.getElementById('briefingRefreshBtn');
-  body.innerHTML = '<div class="td-empty" style="padding-top:1rem;font-style:italic">Generating sports briefing…</div>';
+  if (activeBriefingTab === 'sports') body.innerHTML = '<div class="td-empty" style="padding-top:1rem;font-style:italic">Generating sports briefing…</div>';
   if (btn) btn.disabled = true;
 
   try {
@@ -2324,7 +2326,7 @@ async function loadSportsBriefing(force = false) {
     KVStore.setItem(SPORTS_BRIEFING_DATE_KEY, cacheKey);
     renderBriefing(text, true);
   } catch (e) {
-    body.innerHTML = '<div class="td-empty" style="padding-top:1rem;color:var(--err)">Error generating sports briefing.</div>';
+    if (activeBriefingTab === 'sports') body.innerHTML = '<div class="td-empty" style="padding-top:1rem;color:var(--err)">Error generating sports briefing.</div>';
     console.error('Sports briefing error:', e);
   } finally {
     if (btn) btn.disabled = false;
