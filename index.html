@@ -384,7 +384,8 @@
   /* modal base */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(61,43,31,.45); backdrop-filter: blur(2px); z-index: 100; align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
-  .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 3px; padding: 2rem; width: 400px; box-shadow: 0 8px 40px rgba(61,43,31,.25); max-height: 90vh; overflow-y: auto; }
+  .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 3px; padding: 2rem; width: 400px; box-shadow: 0 8px 40px rgba(61,43,31,.25); max-height: 90vh; overflow-y: auto; scrollbar-width: none; }
+  .modal::-webkit-scrollbar { display: none; }
   .modal h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 400; color: var(--accent); margin-bottom: 1.2rem; }
   .modal label { display: block; font-family: 'Josefin Sans', sans-serif; font-size: .6rem; letter-spacing: .2em; text-transform: uppercase; color: var(--text-lt); margin-bottom: .35rem; }
   .modal input, .modal select {
@@ -652,20 +653,19 @@
 
 <!-- BACKUP MODAL -->
 <div class="modal-overlay" id="backupModal">
-  <div class="modal" style="width:360px">
+  <div class="modal" style="width:360px;scrollbar-width:none">
     <h3>Settings</h3>
-    <p style="font-family:'EB Garamond',serif;font-size:.95rem;color:var(--text-mid);line-height:1.55;margin-bottom:1.4rem">Export saves all your links, feeds, categories and API key to a file. Import restores from a previously exported file.</p>
     <div style="display:flex;flex-direction:column;gap:.7rem">
-      <button class="btn btn-save" style="width:100%;justify-content:center;padding:.7rem" onclick="doExport()">↓ Export Settings</button>
+      <button class="btn btn-save" style="width:100%;justify-content:center;padding:.7rem" onclick="doExport()">↓ Export</button>
       <label class="btn btn-cancel" style="width:100%;text-align:center;padding:.7rem;cursor:pointer">
-        ↑ Import Settings
+        ↑ Import
         <input type="file" accept=".json" style="display:none" onchange="doImport(event)">
       </label>
     </div>
     <span class="backup-notice" id="importNotice" style="margin-top:.8rem"></span>
 
-    <div style="margin-top:1.4rem;padding-top:1.1rem;border-top:1px solid var(--border)">
-      <p style="font-family:'EB Garamond',serif;font-size:.95rem;color:var(--text-mid);line-height:1.55;margin-bottom:.8rem">Your settings sync automatically to the cloud. To access your data on another device or browser, copy the address below and open it once — your settings will load automatically from then on.</p>
+    <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border)">
+      <p style="font-family:'EB Garamond',serif;font-size:.88rem;color:var(--text-lt);line-height:1.45;margin-bottom:.6rem">To sync on another device, copy this link and open it once.</p>
       <input type="text" id="syncTokenDisplay" readonly
         style="width:100%;font-family:'Josefin Sans',sans-serif;font-size:.6rem;letter-spacing:.04em;color:var(--text-mid);background:var(--bg-input);border:1px solid var(--border-lt);padding:.55rem .8rem;border-radius:2px;cursor:text;box-sizing:border-box;margin-bottom:.6rem"
         value="">
@@ -674,15 +674,12 @@
       </div>
     </div>
 
-    <div style="margin-top:1.4rem;padding-top:1.1rem;border-top:1px solid var(--border)">
+    <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.6rem">
       <button class="btn btn-delete" style="width:100%;justify-content:center;padding:.7rem" onclick="clearAllData()">✕ Clear All Data</button>
-    </div>
-
-    <div style="margin-top:.8rem">
       <button class="btn btn-cancel" style="width:100%;justify-content:center;padding:.7rem" onclick="doLogout()">↪ Sign Out</button>
     </div>
 
-    <div style="margin-top:1.4rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+    <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
       <span style="font-family:'Josefin Sans',sans-serif;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-lt)">Version 5.3.2</span>
       <button class="btn btn-cancel" onclick="closeModal('backupModal')">Close</button>
     </div>
