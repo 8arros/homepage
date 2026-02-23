@@ -293,6 +293,7 @@ async function loadWeather() {
   }
 }
 loadWeather();
+setInterval(loadWeather, 30 * 60 * 1000); // refresh weather every 30 minutes
 
 // ── WEATHER MANAGER ──
 function openWeatherManager() {
