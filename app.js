@@ -2918,7 +2918,7 @@ function reinitFromKV() {
     setTimeout(initCol3, 200);
   }
   // Re-fetch weather with potentially updated location
-  fetchWeather();
+  loadWeather();
   // Re-fetch calendars if we now have CalDAV creds
   const { user } = getCaldavCreds();
   if (user) aeFetchCalendars();
