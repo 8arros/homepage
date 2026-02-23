@@ -761,6 +761,7 @@ function getTodoistToken() { return KVStore.getItem(TODOIST_TOKEN_KEY) || ''; }
 let todoistTasks    = [];
 let todoistProjects = {};
 let todoistFilter   = KVStore.getItem(TODOIST_FILTER_KEY) || 'today';
+if (todoistFilter === 'priority') { todoistFilter = 'today'; KVStore.setItem(TODOIST_FILTER_KEY, 'today'); }
 
 function calInit() {
   const now = new Date();
@@ -1353,8 +1354,8 @@ function saveTodoistToken() {
 }
 
 // Filter cycle: today → all → priority → today
-const FILTERS = ['today','all','priority'];
-const FILTER_LABELS = { today:'Today', all:'All Tasks', priority:'Priority' };
+const FILTERS = ['today','upcoming','all'];
+const FILTER_LABELS = { today:'Today', upcoming:'Upcoming', all:'All Tasks' };
 function cycleFilter() {
   const idx = FILTERS.indexOf(todoistFilter);
   todoistFilter = FILTERS[(idx+1) % FILTERS.length];
@@ -1423,9 +1424,27 @@ function renderTodoist() {
       const d = typeof t.due === 'string' ? t.due : (t.due.date || '');
       return d && d <= todayStr;
     });
-  } else if(todoistFilter === 'priority') {
-    tasks = tasks.filter(t => t.priority > 1);
-    tasks.sort((a,b) => b.priority - a.priority);
+  } else if(todoistFilter === 'upcoming') {
+    // Tomorrow through next Sunday
+    const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().slice(0,10);
+    // Find next Sunday
+    const nextSun = new Date(today);
+    const dayOfWeek = nextSun.getDay(); // 0=Sun
+    const daysUntilSun = dayOfWeek === 0 ? 7 : 7 - dayOfWeek;
+    nextSun.setDate(nextSun.getDate() + daysUntilSun);
+    const nextSunStr = nextSun.toISOString().slice(0,10);
+    tasks = tasks.filter(t => {
+      if(!t.due) return false;
+      const d = typeof t.due === 'string' ? t.due : (t.due.date || '');
+      return d && d >= tomorrowStr && d <= nextSunStr;
+    });
+    tasks.sort((a,b) => {
+      const da = (typeof a.due === 'string' ? a.due : a.due?.date) || '9999';
+      const db = (typeof b.due === 'string' ? b.due : b.due?.date) || '9999';
+      if(da !== db) return da < db ? -1 : 1;
+      return b.priority - a.priority;
+    });
   } else {
     // all — sort by due date then priority
     tasks.sort((a,b) => {
@@ -1437,7 +1456,7 @@ function renderTodoist() {
   }
 
   if(!tasks.length) {
-    const msgs = { today:'Nothing due today \u2014 enjoy!', priority:'No priority tasks', all:'No tasks' };
+    const msgs = { today:'Nothing due today \u2014 enjoy!', upcoming:'No upcoming tasks this week', all:'No tasks' };
     list.innerHTML = `<div class="td-empty">${msgs[todoistFilter]}</div>`; return;
   }
 
@@ -1997,7 +2016,7 @@ ${periodRules}
 - If no upcoming items, skip the heads-up entirely
 - Skip any section with no data
 - IMPORTANT: treat each task and event as independent items — never merge, combine, or infer connections between separate items
-- IMPORTANT: write ENTIRELY in English — translate any Portuguese words from the data (e.g. task names, event titles) into English
+- IMPORTANT: write ENTIRELY in English — translate Portuguese words into English (e.g. "psiquiatria" → "psychiatry") but keep abbreviations, acronyms, and short codes exactly as they are (e.g. "DM" stays "DM", "GP" stays "GP")
 - Tone: direct, warm, concise`;
 }
 
