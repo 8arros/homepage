@@ -3044,6 +3044,7 @@ Rules:
 ${periodRules}
 - If no upcoming items, skip the heads-up entirely
 - Skip any section with no data
+- IMPORTANT: treat each task and event as independent items — never merge, combine, or infer connections between separate items
 - Tone: direct, warm, concise`;
 }
 
@@ -3082,7 +3083,7 @@ async function loadBriefing(force = false) {
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model:      'claude-haiku-4-5-20251001',
+        model:      'claude-sonnet-4-20250514',
         max_tokens: 600,
         messages:   [{ role:'user', content: prompt }]
       })
@@ -3360,7 +3361,7 @@ async function loadSportsBriefing(force = false) {
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model:      'claude-haiku-4-5-20251001',
+        model:      'claude-sonnet-4-20250514',
         max_tokens: 800,
         messages:   [{ role: 'user', content: prompt }]
       })
