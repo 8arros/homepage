@@ -1997,6 +1997,7 @@ ${periodRules}
 - If no upcoming items, skip the heads-up entirely
 - Skip any section with no data
 - IMPORTANT: treat each task and event as independent items — never merge, combine, or infer connections between separate items
+- IMPORTANT: write ENTIRELY in English — translate any Portuguese words from the data (e.g. task names, event titles) into English
 - Tone: direct, warm, concise`;
 }
 
@@ -2392,6 +2393,9 @@ async function refreshAllBriefings() {
 }
 
 function renderBriefing(text, isSports) {
+  // Only render if the active tab matches this briefing type
+  if (isSports && activeBriefingTab !== 'sports') return;
+  if (!isSports && activeBriefingTab !== 'daily') return;
   const body = document.getElementById('briefingBody');
   if (!body) return;
   if (typeof text === 'string' && text.startsWith('<')) {
