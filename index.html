@@ -405,7 +405,7 @@
   .btn-save:hover { background: var(--accent-lt); border-color: var(--accent-lt); }
   .btn-delete { background: none; border: 1px solid #c0785a; color: #c0785a; }
   .btn-delete:hover { background: #c0785a; color: var(--bg-input); }
-  .active-cat { background: var(--accent) !important; color: var(--bg) !important; border-color: var(--accent) !important; }
+  .active-cat { background: var(--accent) !important; color: var(--bg-card) !important; border-color: var(--accent) !important; }
   .btn-verify { background: none; border: 1px solid var(--border); color: var(--text-lt); }
   .btn-verify:hover { border-color: var(--accent-lt); color: var(--accent); }
 </style>
@@ -1169,7 +1169,6 @@ const KVStore = (() => {
 // Start loading immediately — the page will render with defaults,
 // then re-render once remote data arrives.
 KVStore.init().then(() => {
-  console.log('[KVStore] Remote data loaded, re-initialising page…');
   if (typeof reinitFromKV === 'function') reinitFromKV();
 });
 
@@ -2848,7 +2847,6 @@ async function saveAddTask() {
   }
 }
 
-async function addTodoistTask() { openAddTask(); }
 
 
 // ── QUICK NOTES ──
@@ -3226,7 +3224,6 @@ async function loadAllSportsIcs() {
       seen.add(ev.uid);
       return true;
     });
-    console.log(`[Sports] Loaded ${sportsRawCache.length} events from ${SPORTS_ICS.length} calendars`);
   } finally {
     _sportsLoading = false;
   }
@@ -3973,46 +3970,6 @@ function reinitFromKV() {
   // Re-load todoist
   loadTodoist();
 }
-
-// ── One-time migration from localStorage → KVStore ──
-// If the user has existing data in localStorage, migrate it to KV
-// and clear localStorage afterwards.
-(function migrateFromLocalStorage() {
-  const MIGRATE_KEYS = [...BACKUP_KEYS, ...CACHE_KEYS];
-  let hasLocal = false;
-  const entries = {};
-  MIGRATE_KEYS.forEach(k => {
-    try {
-      const v = localStorage.getItem(k);
-      if (v !== null) {
-        entries[k] = v;
-        hasLocal = true;
-      }
-    } catch(e) { /* localStorage might be blocked */ }
-  });
-  if (hasLocal) {
-    console.log('[Migration] Found localStorage data, migrating to KVStore…');
-    KVStore.onReady(async () => {
-      // Only migrate keys that don't already exist in KV
-      const toMigrate = {};
-      for (const [k, v] of Object.entries(entries)) {
-        if (KVStore.getItem(k) === null) {
-          toMigrate[k] = v;
-        }
-      }
-      if (Object.keys(toMigrate).length > 0) {
-        await KVStore.setMany(toMigrate);
-        console.log('[Migration] Migrated keys:', Object.keys(toMigrate));
-      }
-      // Clear localStorage
-      MIGRATE_KEYS.forEach(k => {
-        try { localStorage.removeItem(k); } catch(e) {}
-      });
-      console.log('[Migration] localStorage cleared. Using KVStore from now on.');
-      reinitFromKV();
-    });
-  }
-})();
 
 </script>
 </body>
