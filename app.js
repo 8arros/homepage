@@ -1140,7 +1140,6 @@ document.getElementById('caldavModal').addEventListener('click', e=>{ if(e.targe
 ['addTaskModal','addEventModal'].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener('click', e=>{ if(e.target===e.currentTarget) closeModal(id); });
-  else console.warn('Modal not found:', id);
 });
 
 // ── VIEW SWITCHER ──
