@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<!-- v5.2 — GitHub Pages + api.barros.work -->
+<!-- v5.3 — Auth + GitHub Pages + api.barros.work -->
 <title>Home</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a5c3e' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z'/%3E%3Cpath d='M9 21V12h6v9'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -411,7 +411,26 @@
 </style>
 </head>
 <body>
-<div class="page">
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="loginScreen" style="display:none;position:fixed;inset:0;z-index:9999;background:linear-gradient(180deg,var(--bg-top) 0%,#fdf6e8 15%,#f5e8c8 40%,#edd8a8 70%,var(--bg-bot) 100%);display:flex;align-items:center;justify-content:center">
+  <div style="background:rgba(237,228,210,0.92);border:1px solid var(--border-lt);border-radius:3px;padding:2.5rem 2.8rem;box-shadow:0 4px 24px var(--shadow);backdrop-filter:blur(6px);width:320px;text-align:center">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:300;letter-spacing:.08em;color:var(--accent);margin-bottom:.3rem">Home</div>
+    <div style="font-family:'Josefin Sans',sans-serif;font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:var(--text-lt);margin-bottom:2rem">Personal Dashboard</div>
+    <input type="text" id="loginUser" placeholder="Username" autocomplete="username"
+      style="display:block;width:100%;padding:.6rem .8rem;background:var(--bg-input);border:1px solid var(--border-lt);border-radius:2px;font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);outline:none;margin-bottom:.7rem;box-sizing:border-box;transition:border-color .18s"
+      onfocus="this.style.borderColor='var(--accent-lt)'" onblur="this.style.borderColor='var(--border-lt)'">
+    <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password"
+      style="display:block;width:100%;padding:.6rem .8rem;background:var(--bg-input);border:1px solid var(--border-lt);border-radius:2px;font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);outline:none;margin-bottom:.5rem;box-sizing:border-box;transition:border-color .18s"
+      onfocus="this.style.borderColor='var(--accent-lt)'" onblur="this.style.borderColor='var(--border-lt)'"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <div id="loginError" style="font-family:'EB Garamond',serif;font-size:.85rem;color:var(--err);min-height:1.4rem;margin-bottom:.5rem"></div>
+    <button onclick="doLogin()" style="width:100%;padding:.65rem;background:var(--accent);border:1px solid var(--accent);border-radius:2px;color:#fdf6e8;font-family:'Josefin Sans',sans-serif;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;transition:background .18s"
+      onmouseover="this.style.background='var(--accent-lt)'" onmouseout="this.style.background='var(--accent)'">Sign In</button>
+  </div>
+</div>
+
+<div class="page" id="mainPage" style="display:none">
 
   <header>
     <div class="header-left">
@@ -659,8 +678,12 @@
       <button class="btn btn-delete" style="width:100%;justify-content:center;padding:.7rem" onclick="clearAllData()">✕ Clear All Data</button>
     </div>
 
+    <div style="margin-top:.8rem">
+      <button class="btn btn-cancel" style="width:100%;justify-content:center;padding:.7rem" onclick="doLogout()">↪ Sign Out</button>
+    </div>
+
     <div style="margin-top:1.4rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-      <span style="font-family:'Josefin Sans',sans-serif;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-lt)">Version 5.2</span>
+      <span style="font-family:'Josefin Sans',sans-serif;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-lt)">Version 5.3</span>
       <button class="btn btn-cancel" onclick="closeModal('backupModal')">Close</button>
     </div>
   </div>
@@ -1034,6 +1057,109 @@
 
 <script>
 // ═══════════════════════════════════════════════════════════════════
+// ── AUTH — login via Worker /auth route, token stored in cookie ──
+// ═══════════════════════════════════════════════════════════════════
+
+const API_BASE = 'https://api.barros.work';
+
+function getAuthToken() {
+  const match = document.cookie.match(/(?:^|;\s*)auth_token=([^;]+)/);
+  return match ? match[1] : null;
+}
+
+function setAuthToken(token, maxAge) {
+  document.cookie = `auth_token=${token};path=/;max-age=${maxAge};SameSite=Strict;Secure`;
+}
+
+function clearAuthToken() {
+  document.cookie = 'auth_token=;path=/;max-age=0;SameSite=Strict;Secure';
+}
+
+// Adds auth header to all fetch calls to the Worker
+function authFetch(url, opts = {}) {
+  const token = getAuthToken();
+  if (token) {
+    opts.headers = opts.headers || {};
+    if (opts.headers instanceof Headers) {
+      opts.headers.set('Authorization', `Bearer ${token}`);
+    } else {
+      opts.headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+  return fetch(url, opts);
+}
+
+async function doLogin() {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  errEl.textContent = '';
+
+  if (!user || !pass) { errEl.textContent = 'Please enter username and password.'; return; }
+
+  try {
+    const res = await fetch(`${API_BASE}/auth`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user, pass }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.token) {
+      errEl.textContent = 'Invalid credentials.';
+      return;
+    }
+    setAuthToken(data.token, data.expires_in || 2592000);
+    showApp();
+  } catch (e) {
+    errEl.textContent = 'Connection error. Try again.';
+  }
+}
+
+async function checkAuth() {
+  const token = getAuthToken();
+  if (!token) { showLogin(); return; }
+  try {
+    const res = await fetch(`${API_BASE}/auth/verify`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (data.valid) { showApp(); } else { clearAuthToken(); showLogin(); }
+  } catch {
+    // Network error — if we have a token, assume valid (offline tolerance)
+    showApp();
+  }
+}
+
+function showLogin() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('mainPage').style.display = 'none';
+  document.getElementById('loginUser').focus();
+}
+
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainPage').style.display = '';
+  if (!window._appInitialised) {
+    window._appInitialised = true;
+    initApp();
+  }
+}
+
+function doLogout() {
+  clearAuthToken();
+  location.reload();
+}
+
+// Check auth on page load
+checkAuth();
+
+// ═══════════════════════════════════════════════════════════════════
+// ── App initialisation (only runs after successful auth) ──
+// ═══════════════════════════════════════════════════════════════════
+
+function initApp() {
+
+// ═══════════════════════════════════════════════════════════════════
 // ── KVStore — replaces localStorage with Cloudflare Workers KV ──
 // ═══════════════════════════════════════════════════════════════════
 //
@@ -1052,7 +1178,7 @@
 //      set it manually via ?token=<your-token> in the URL.
 // ═══════════════════════════════════════════════════════════════════
 
-const KV_WORKER_URL = 'https://api.barros.work';
+const KV_WORKER_URL = API_BASE;
 
 const KVStore = (() => {
   const cache = new Map();
@@ -1093,7 +1219,7 @@ const KVStore = (() => {
       opts.body = JSON.stringify(body);
     }
     try {
-      const res = await fetch(`${KV_WORKER_URL}${path}`, opts);
+      const res = await authFetch(`${KV_WORKER_URL}${path}`, opts);
       return await res.json();
     } catch (e) {
       console.warn('[KVStore] network error:', e.message);
@@ -1507,12 +1633,12 @@ function renderNews(tab) {
 }
 
 // Substitui este URL pelo URL do teu Worker depois de o criar
-const WORKER_URL = 'https://api.barros.work';
+const WORKER_URL = API_BASE;
 
 async function fetchViaProxy(url, timeoutMs = 8000) {
   const proxyUrl = `${WORKER_URL}/?url=${encodeURIComponent(url)}`;
   const res = await Promise.race([
-    fetch(proxyUrl),
+    authFetch(proxyUrl),
     new Promise((_,rej) => setTimeout(() => rej(new Error('Request timed out')), timeoutMs))
   ]);
   if (!res.ok) throw new Error(`Proxy returned ${res.status}`);
@@ -2339,7 +2465,7 @@ async function sendMessage() {
   const thinking = addBubble('thinking', 'thinking…');
 
   try {
-    const res = await fetch(`${WORKER_URL}/claude`, {
+    const res = await authFetch(`${WORKER_URL}/claude`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
       body: JSON.stringify({
@@ -2375,7 +2501,7 @@ async function todoistSync(params) {
   const body = Object.entries(params)
     .map(([k,v]) => `${encodeURIComponent(k)}=${encodeURIComponent(typeof v === 'object' ? JSON.stringify(v) : v)}`)
     .join('&');
-  const res = await fetch(`${WORKER_URL}/todoist`, {
+  const res = await authFetch(`${WORKER_URL}/todoist`, {
     method: 'POST',
     headers: { 'x-todoist-token': token, 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
@@ -3494,7 +3620,7 @@ async function caldavRequest(method, targetUrl, body = null, depth = '0') {
     'x-caldav-url': targetUrl,
     'x-caldav-depth': depth,
   };
-  const res = await fetch(`${WORKER_URL}/caldav`, {
+  const res = await authFetch(`${WORKER_URL}/caldav`, {
     method: 'POST',
     headers,
     body: body || '',
@@ -3970,6 +4096,8 @@ function reinitFromKV() {
   // Re-load todoist
   loadTodoist();
 }
+
+} // end initApp()
 
 </script>
 </body>
