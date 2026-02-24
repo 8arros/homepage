@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<!-- v5.5.4 — Auth + GitHub Pages + api.barros.work -->
+<!-- v5.5.5 — Auth + GitHub Pages + api.barros.work -->
 <title>Home</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a5c3e' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z'/%3E%3Cpath d='M9 21V12h6v9'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -124,7 +124,7 @@
   .weather-icon { width: 3.5rem; height: 3.5rem; display: block; margin-bottom: .3rem; }
   .fc-icon { display: flex; align-items: center; justify-content: center; }
   .fc-icon img { width: 1.8rem; height: 1.8rem; }
-  .weather-condition { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-style: italic; color: var(--text-mid); display: block; }
+  .weather-condition { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--text-mid); display: block; }
   .weather-loc { font-family: 'Josefin Sans', sans-serif; font-size: .57rem; letter-spacing: .18em; text-transform: uppercase; color: var(--text-lt); display: block; margin-top: .2rem; }
   .wx-stats { display: grid; grid-template-columns: 1fr 1fr; gap: .35rem; margin: .5rem 0 1.6rem; }
   .wx-stat { background: var(--bg-input); border: 1px solid var(--border-lt); border-radius: 2px; padding: .35rem .55rem; }
@@ -315,10 +315,10 @@
   /* events */
   .cal-event { padding: .45rem 0; display:flex; gap:.6rem; align-items:baseline; }
   .cal-event-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink:0; position:relative; top:.3rem; }
-  .cal-event-date { font-family:'Cormorant Garamond',serif; font-size:.95rem; color:var(--text-lt); white-space:nowrap; flex-shrink:0; width:2.6rem; text-align:right; font-style:italic; }
+  .cal-event-date { font-family:'Cormorant Garamond',serif; font-size:.95rem; color:var(--text-lt); white-space:nowrap; flex-shrink:0; width:2.6rem; text-align:right; }
   .cal-event-body { flex:1; min-width:0; }
   .cal-event-title { font-family:'Cormorant Garamond',serif; font-size:.95rem; color:var(--text); line-height:1.3; }
-  .cal-event-loc { font-family:'EB Garamond',serif; font-size:.72rem; letter-spacing:.01em; color:var(--border); margin-top:.12rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .cal-event-loc { font-family:'EB Garamond',serif; font-size:.72rem; letter-spacing:.01em; color:var(--text-lt); margin-top:.12rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .cal-day-header { font-family:'Josefin Sans',sans-serif; font-size:.55rem; letter-spacing:.18em; text-transform:uppercase; color:var(--text-lt); padding:.5rem 0 .2rem; margin-top:.5rem; display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
   .cal-day-header:first-child { margin-top:0; }
   .cal-wx-row { display:flex; align-items:center; gap:.3rem; flex-shrink:0; }
@@ -682,7 +682,7 @@
     </div>
 
     <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-      <span style="font-family:'Josefin Sans',sans-serif;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-lt)">html 5.5.4</span>
+      <span style="font-family:'Josefin Sans',sans-serif;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-lt)">html 5.5.5</span>
       <span id="jsVersion" style="font-family:'Josefin Sans',sans-serif;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-lt)"></span>
       <button class="btn btn-cancel" onclick="closeModal('backupModal')">Close</button>
     </div>
