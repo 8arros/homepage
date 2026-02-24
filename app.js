@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.6.5';
+const APP_VERSION = '5.7';
 
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
@@ -697,6 +697,7 @@ function openBackup() {
   document.getElementById('importNotice').textContent = '';
   document.getElementById('importNotice').className = 'backup-notice';
   document.getElementById('syncTokenDisplay').value = location.origin + '/?token=' + KVStore.getToken();
+  document.getElementById('syncTokenMobile').value = location.origin + '/mobile/?token=' + KVStore.getToken();
   document.getElementById('backupModal').classList.add('open');
 }
 

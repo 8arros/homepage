@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<!-- v5.6.5 — Auth + GitHub Pages + api.barros.work -->
+<!-- v5.7 — Auth + GitHub Pages + api.barros.work -->
 <title>Home</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a5c3e' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z'/%3E%3Cpath d='M9 21V12h6v9'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -670,12 +670,18 @@
     <span class="backup-notice" id="importNotice" style="margin-top:.8rem"></span>
 
     <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border)">
-      <p style="font-family:'Cormorant Garamond', serif;font-size:.88rem;color:var(--text-lt);line-height:1.45;margin-bottom:.6rem">To sync on another device, copy this link and open it once.</p>
+      <p style="font-family:'Cormorant Garamond', serif;font-size:.88rem;color:var(--text-lt);line-height:1.45;margin-bottom:.6rem">To sync on another device, copy the appropriate link and open it once.</p>
+      <label>Desktop</label>
       <input type="text" id="syncTokenDisplay" readonly
+        style="width:100%;font-family:'Raleway', sans-serif;font-size:.6rem;letter-spacing:.04em;color:var(--text-mid);background:var(--bg-input);border:1px solid var(--border-lt);padding:.55rem .8rem;border-radius:2px;cursor:text;box-sizing:border-box;margin-bottom:.4rem"
+        value="">
+      <label>Mobile</label>
+      <input type="text" id="syncTokenMobile" readonly
         style="width:100%;font-family:'Raleway', sans-serif;font-size:.6rem;letter-spacing:.04em;color:var(--text-mid);background:var(--bg-input);border:1px solid var(--border-lt);padding:.55rem .8rem;border-radius:2px;cursor:text;box-sizing:border-box;margin-bottom:.6rem"
         value="">
-      <div style="display:flex;justify-content:flex-end">
-        <button class="btn btn-cancel" onclick="navigator.clipboard.writeText(document.getElementById('syncTokenDisplay').value).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1200)})">Copy</button>
+      <div style="display:flex;justify-content:flex-end;gap:.5rem">
+        <button class="btn btn-cancel" onclick="navigator.clipboard.writeText(document.getElementById('syncTokenDisplay').value).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy Desktop',1200)})">Copy Desktop</button>
+        <button class="btn btn-cancel" onclick="navigator.clipboard.writeText(document.getElementById('syncTokenMobile').value).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy Mobile',1200)})">Copy Mobile</button>
       </div>
     </div>
 
@@ -685,7 +691,7 @@
     </div>
 
     <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-      <span style="font-family:'Raleway', sans-serif;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-lt)">html 5.6.5</span>
+      <span style="font-family:'Raleway', sans-serif;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-lt)">html 5.7</span>
       <span id="jsVersion" style="font-family:'Raleway', sans-serif;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-lt)"></span>
       <button class="btn btn-cancel" onclick="closeModal('backupModal')">Close</button>
     </div>
