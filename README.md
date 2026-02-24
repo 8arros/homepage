@@ -57,3 +57,7 @@ The visual style is intentionally warm and typographic — no bright colours, no
 This project was developed entirely through conversation. Barros described what he wanted; Claude wrote the code. Every feature, every bug fix, every design decision went through this loop — describe, generate, test, refine. The current version (5.3.3) is the result of dozens of iterative sessions.
 
 No code was written by hand.
+
+## Self-Hosting
+
+Want to deploy your own instance? Follow the [step-by-step guide](HOWTO.md) — it covers domain setup, Cloudflare Worker configuration, GitHub Pages deployment, and everything in between. No coding knowledge required.
