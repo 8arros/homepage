@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.5.3';
+const APP_VERSION = '5.5.4';
 
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
@@ -1204,7 +1204,7 @@ async function saveEditEvent() {
   statusEl.textContent = '';
 
   try {
-    const { status } = await caldavRequest('PUT', eventUrl, icsText);
+    const { status } = await caldavRequest('PUT', eventUrl, icsText, '0', { 'x-caldav-if-match': '*' });
     if (status === 200 || status === 201 || status === 204) {
       statusEl.style.color = 'var(--accent)';
       statusEl.textContent = '✓ Event updated';
@@ -1236,7 +1236,7 @@ async function deleteEditEvent() {
   statusEl.textContent = '';
 
   try {
-    const { status } = await caldavRequest('DELETE', eventUrl);
+    const { status } = await caldavRequest('DELETE', eventUrl, null, '0', { 'x-caldav-if-match': '*' });
     if (status === 200 || status === 204) {
       statusEl.style.color = 'var(--accent)';
       statusEl.textContent = '✓ Event deleted';
@@ -2881,7 +2881,7 @@ function saveCaldavSettings() {
 }
 
 // ── CalDAV proxy call via worker ──
-async function caldavRequest(method, targetUrl, body = null, depth = '0') {
+async function caldavRequest(method, targetUrl, body = null, depth = '0', extraHeaders = {}) {
   const { user, pass } = getCaldavCreds();
   const headers = {
     'Content-Type': 'application/json',
@@ -2890,6 +2890,7 @@ async function caldavRequest(method, targetUrl, body = null, depth = '0') {
     'x-caldav-method': method,
     'x-caldav-url': targetUrl,
     'x-caldav-depth': depth,
+    ...extraHeaders,
   };
   const res = await authFetch(`${WORKER_URL}/caldav`, {
     method: 'POST',
