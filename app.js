@@ -366,13 +366,6 @@ function renderLinks() {
   });
 }
 let editingLinkIdx=-1;
-function openAddLink() {
-  editingLinkIdx=-1;
-  document.getElementById('modalTitle').textContent='New Link';
-  document.getElementById('linkName').value=''; document.getElementById('linkUrl').value='';
-  document.getElementById('btnDelete').style.display='none';
-  document.getElementById('linkModal').classList.add('open');
-}
 function openEditLink(e,i) {
   e.preventDefault(); e.stopPropagation(); editingLinkIdx=i;
   const l=loadLinks(); document.getElementById('modalTitle').textContent='Edit Link';
@@ -762,7 +755,6 @@ function getTodoistToken() { return KVStore.getItem(TODOIST_TOKEN_KEY) || ''; }
 let todoistTasks    = [];
 let todoistProjects = {};
 let todoistFilter   = KVStore.getItem(TODOIST_FILTER_KEY) || 'today';
-if (todoistFilter === 'priority') { todoistFilter = 'today'; KVStore.setItem(TODOIST_FILTER_KEY, 'today'); }
 
 function calInit() {
   const now = new Date();
@@ -1354,7 +1346,7 @@ function saveTodoistToken() {
   loadTodoist();
 }
 
-// Filter cycle: today → all → priority → today
+// Filter cycle: today → upcoming → all → today
 const FILTERS = ['today','upcoming','all'];
 const FILTER_LABELS = { today:'Today', upcoming:'Upcoming', all:'All Tasks' };
 function cycleFilter() {
@@ -2130,15 +2122,6 @@ function switchCalModalTab(tab) {
   document.getElementById('btnCalTabSports').classList.toggle('active', tab === 'sports');
   document.getElementById('calModalTitle').textContent = tab === 'personal' ? 'Manage Calendars' : 'Sports Calendars';
   if (tab === 'sports') renderSportsList();
-}
-
-function openSportsManager() {
-  renderSportsList();
-  document.getElementById('sportsUrl').value = '';
-  document.getElementById('sportsName').value = '';
-  document.getElementById('sportsStatus').textContent = '';
-  switchCalModalTab('sports');
-  document.getElementById('icsModal').classList.add('open');
 }
 
 function renderSportsList() {
