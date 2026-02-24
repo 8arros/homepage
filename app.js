@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.5';
+const APP_VERSION = '5.5.1';
 
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
@@ -993,7 +993,7 @@ function getEventsInWindow(windowStart, windowEnd) {
       if(durationDays === 0) {
         // single-day event (including allDay with DTSTART==DTEND)
         if(startDay >= windowStart && startDay <= windowEnd)
-          events.push({start:occ, title:rev.title, calName:rev.calName, calColor:rev.calColor, allDay:rev.allDay, location:rev.location||'', isFirstDay:true});
+          events.push({start:occ, title:rev.title, calName:rev.calName, calColor:rev.calColor, allDay:rev.allDay, location:rev.location||'', isFirstDay:true, uid:rev.uid||'', rrule:rev.rrule||''});
       } else {
         // multi-day: compute end for this occurrence
         let occEndDay = new Date(startDay.getTime() + durationDays * 86400000);
@@ -1002,13 +1002,210 @@ function getEventsInWindow(windowStart, windowEnd) {
         const spanEnd   = new Date(Math.min(occEndDay.getTime(), windowEnd.getTime()));
         let d = new Date(spanStart);
         while(d <= spanEnd){
-          events.push({start:new Date(d), title:rev.title, calName:rev.calName, calColor:rev.calColor, allDay:true, location:rev.location||'', isFirstDay:d.getTime()===startDay.getTime()});
+          events.push({start:new Date(d), title:rev.title, calName:rev.calName, calColor:rev.calColor, allDay:true, location:rev.location||'', isFirstDay:d.getTime()===startDay.getTime(), uid:rev.uid||'', rrule:rev.rrule||''});
           d = addDays(d,1);
         }
       }
     }
   }
   return events.sort((a,b)=>a.start-b.start);
+}
+
+// Check if an event belongs to a CalDAV calendar (editable) vs ICS-only feed
+function isCaldavEvent(calName) {
+  const cals = loadIcsCalendars();
+  const cal = cals.find(c => c.name === calName);
+  return cal && /caldav\.fastmail\.com/.test(cal.url);
+}
+
+// Find CalDAV calendar URL for a given calName
+function getCaldavCalUrl(calName) {
+  const cals = loadIcsCalendars();
+  const cal = cals.find(c => c.name === calName);
+  if (!cal) return null;
+  // ICS feed URL is like: https://caldav.fastmail.com/dav/calendars/user/xxx/calendarname/
+  // CalDAV PUT URL for event: same base + uid.ics
+  const m = cal.url.match(/(https:\/\/caldav\.fastmail\.com\/dav\/calendars\/user\/[^?]+)/);
+  return m ? m[1].replace(/\/$/, '') + '/' : null;
+}
+
+// Edit event state
+let editingEvent = null;
+
+function openEditEvent(uid) {
+  // Find the raw event in icsRawCache
+  const raw = icsRawCache.find(e => e.uid === uid);
+  if (!raw) return;
+  if (raw.rrule) return; // recurring events not editable
+
+  editingEvent = { ...raw };
+
+  // Reuse the Add Event modal
+  document.getElementById('aeModalTitle').textContent = 'Edit Event';
+  document.getElementById('aeSubmitBtn').textContent = 'Save';
+  document.getElementById('aeSubmitBtn').onclick = saveEditEvent;
+  document.getElementById('aeDeleteBtn').style.display = '';
+  document.getElementById('aeStatus').textContent = '';
+  document.getElementById('aeStatus').style.color = '';
+
+  // Fill in title and location
+  document.getElementById('aeTitle').value = raw.title || '';
+  document.getElementById('aeLocation').value = raw.location || '';
+
+  // Calendar — find and select matching CalDAV calendar
+  const calIdx = aeCalendars.findIndex(c => c.displayName === raw.calName);
+  if (calIdx >= 0) {
+    aeState.calUrl = aeCalendars[calIdx].url;
+    aeState.calName = aeCalendars[calIdx].displayName;
+    document.getElementById('aeCalLabel').textContent = aeCalendars[calIdx].displayName;
+    document.getElementById('aeCalLabel').classList.remove('at-dp-placeholder');
+  }
+
+  // Start date/time
+  const s = new Date(raw.start);
+  aeState.startDate = `${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,'0')}-${String(s.getDate()).padStart(2,'0')}`;
+  if (!raw.allDay) {
+    aeState.startH = s.getHours();
+    aeState.startM = s.getMinutes();
+  } else {
+    aeState.startH = null;
+    aeState.startM = null;
+  }
+
+  // End date/time
+  if (raw.end) {
+    const e = new Date(raw.end);
+    // For all-day events, DTEND is exclusive (next day), so subtract 1
+    if (raw.allDay) e.setDate(e.getDate() - 1);
+    aeState.endDate = `${e.getFullYear()}-${String(e.getMonth()+1).padStart(2,'0')}-${String(e.getDate()).padStart(2,'0')}`;
+    if (!raw.allDay) {
+      aeState.endH = e.getHours();
+      aeState.endM = e.getMinutes();
+    } else {
+      aeState.endH = null;
+      aeState.endM = null;
+    }
+  } else {
+    aeState.endDate = null;
+    aeState.endH = null;
+    aeState.endM = null;
+  }
+
+  // Update all displays
+  aeState.calMonth = { start: s.getMonth(), end: s.getMonth() };
+  aeState.calYear  = { start: s.getFullYear(), end: s.getFullYear() };
+  aeUpdateDateDisplay('start');
+  aeUpdateDateDisplay('end');
+  aeUpdateTimeDisplay('start');
+  aeUpdateTimeDisplay('end');
+  aeFetchCalendars();
+
+  document.getElementById('addEventModal').classList.add('open');
+  setTimeout(() => document.getElementById('aeTitle').focus(), 80);
+}
+
+async function saveEditEvent() {
+  if (!editingEvent || !editingEvent.uid) return;
+  const statusEl = document.getElementById('aeStatus');
+  const title    = document.getElementById('aeTitle').value.trim();
+  const location = document.getElementById('aeLocation').value.trim();
+
+  if (!title)             { statusEl.textContent = '⚠ Please enter a title.'; return; }
+  if (!aeState.startDate) { statusEl.textContent = '⚠ Please select a start date.'; return; }
+  if (!aeState.calUrl)    { statusEl.textContent = '⚠ Please select a calendar.'; return; }
+
+  const endDate = aeState.endDate || aeState.startDate;
+  const allDay  = aeState.startH === null;
+
+  const fmtDt = (dateStr, h, m) => {
+    if (h === null) return dateStr.replace(/-/g, '');
+    return `${dateStr.replace(/-/g,'')}T${String(h).padStart(2,'0')}${String(m).padStart(2,'0')}00`;
+  };
+  const dtstart = fmtDt(aeState.startDate, aeState.startH, aeState.startM);
+  let   dtend   = fmtDt(endDate, aeState.endH ?? aeState.startH, aeState.endM ?? aeState.startM);
+  if (allDay) {
+    const d = new Date(endDate + 'T00:00:00');
+    d.setDate(d.getDate() + 1);
+    dtend = d.toISOString().slice(0,10).replace(/-/g,'');
+  }
+
+  const now    = new Date().toISOString().replace(/[-:]/g,'').slice(0,15) + 'Z';
+  const dtProp = allDay ? 'VALUE=DATE:' : '';
+
+  let ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'CALSCALE:GREGORIAN',
+    'PRODID:-//Startpage//EN',
+    'BEGIN:VEVENT',
+    `UID:${editingEvent.uid}`,
+    `DTSTAMP:${now}`,
+    `DTSTART;${dtProp}${dtstart}`,
+    `DTEND;${dtProp}${dtend}`,
+    `SUMMARY:${title.replace(/\n/g,'\\n')}`,
+  ];
+  if (location) ics.push(`LOCATION:${location.replace(/\n/g,'\\n')}`);
+  ics.push('END:VEVENT', 'END:VCALENDAR');
+  const icsText = ics.join('\r\n');
+
+  // CalDAV PUT URL = calendar base + uid.ics
+  const calBase = getCaldavCalUrl(editingEvent.calName);
+  if (!calBase) { statusEl.textContent = '⚠ Cannot find CalDAV calendar URL.'; return; }
+  const eventUrl = calBase + editingEvent.uid + '.ics';
+
+  document.getElementById('aeSubmitBtn').disabled = true;
+  document.getElementById('aeSubmitBtn').textContent = 'Saving…';
+  statusEl.textContent = '';
+
+  try {
+    const { status } = await caldavRequest('PUT', eventUrl, icsText);
+    if (status === 200 || status === 201 || status === 204) {
+      statusEl.style.color = 'var(--accent)';
+      statusEl.textContent = '✓ Event updated';
+      document.getElementById('aeSubmitBtn').textContent = 'Done';
+      editingEvent = null;
+      setTimeout(() => { loadAllIcs(); closeModal('addEventModal'); }, 900);
+    } else {
+      statusEl.style.color = '#c0392b';
+      statusEl.textContent = `⚠ Server returned ${status}`;
+      document.getElementById('aeSubmitBtn').disabled = false;
+      document.getElementById('aeSubmitBtn').textContent = 'Save';
+    }
+  } catch (e) {
+    statusEl.style.color = '#c0392b';
+    statusEl.textContent = '⚠ Network error: ' + e.message;
+    document.getElementById('aeSubmitBtn').disabled = false;
+    document.getElementById('aeSubmitBtn').textContent = 'Save';
+  }
+}
+
+async function deleteEditEvent() {
+  if (!editingEvent || !editingEvent.uid) return;
+  const statusEl = document.getElementById('aeStatus');
+  const calBase = getCaldavCalUrl(editingEvent.calName);
+  if (!calBase) { statusEl.textContent = '⚠ Cannot find CalDAV calendar URL.'; return; }
+  const eventUrl = calBase + editingEvent.uid + '.ics';
+
+  document.getElementById('aeDeleteBtn').disabled = true;
+  statusEl.textContent = '';
+
+  try {
+    const { status } = await caldavRequest('DELETE', eventUrl);
+    if (status === 200 || status === 204) {
+      statusEl.style.color = 'var(--accent)';
+      statusEl.textContent = '✓ Event deleted';
+      editingEvent = null;
+      setTimeout(() => { loadAllIcs(); closeModal('addEventModal'); }, 900);
+    } else {
+      statusEl.style.color = '#c0392b';
+      statusEl.textContent = `⚠ Server returned ${status}`;
+      document.getElementById('aeDeleteBtn').disabled = false;
+    }
+  } catch (e) {
+    statusEl.style.color = '#c0392b';
+    statusEl.textContent = '⚠ Network error: ' + e.message;
+    document.getElementById('aeDeleteBtn').disabled = false;
+  }
 }
 
 function renderEvents() {
@@ -1054,8 +1251,10 @@ function renderEvents() {
     }
     const timeStr=ev.allDay?'all day':`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
     const locHtml=ev.location?`<div class="cal-event-loc">${ev.location}</div>`:'';
-    const contMark=''; // continuation days shown without marker — context is clear
-    html+=`<div class="cal-event">
+    // Editable: has UID, no RRULE, and belongs to a CalDAV calendar (not ICS-only feed)
+    const isEditable = ev.uid && !ev.rrule && isCaldavEvent(ev.calName);
+    const clickAttr = isEditable ? ` onclick="openEditEvent('${ev.uid.replace(/'/g,"\\'")}')" style="cursor:pointer"` : '';
+    html+=`<div class="cal-event"${clickAttr}>
       <div class="cal-event-dot" style="background:${ev.calColor}"></div>
       <div class="cal-event-date">${timeStr}</div>
       <div class="cal-event-body"><div class="cal-event-title">${ev.title}</div>${locHtml}</div>
@@ -2952,6 +3151,7 @@ function aeOutsideClick(e) {
 function openAddEvent() {
   const { user } = getCaldavCreds();
   if (!user) { openCaldavSettings(); return; }
+  editingEvent = null;
   const now = new Date();
   aeState = {
     calUrl:  null,
@@ -2975,6 +3175,10 @@ function openAddEvent() {
   });
   document.getElementById('aeSubmitBtn').disabled    = false;
   document.getElementById('aeSubmitBtn').textContent = 'Add Event';
+  document.getElementById('aeSubmitBtn').onclick     = saveAddEvent;
+  document.getElementById('aeDeleteBtn').style.display = 'none';
+  document.getElementById('aeDeleteBtn').disabled = false;
+  document.getElementById('aeModalTitle').textContent = 'New Event';
   document.getElementById('aeCalLabel').textContent = 'Select calendar…';
   document.getElementById('aeCalLabel').classList.add('at-dp-placeholder');
   if (!aeCalendars.length) aeFetchCalendars();
