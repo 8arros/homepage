@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.4.6';
+const APP_VERSION = '5.5';
 
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
@@ -1511,7 +1511,7 @@ function renderTodoist() {
 
     return `<div class="td-task" data-id="${t.id}">
       <button class="td-check" onclick="completeTodoistTask('${t.id}')" title="Complete"></button>
-      <div class="td-body ${pClass}">
+      <div class="td-body ${pClass}" onclick="openEditTask('${t.id}')" style="cursor:pointer">
         ${projBadge}
         <div class="td-title">${t.content}${notesIcon}</div>
         ${dueHtml}
@@ -1822,26 +1822,148 @@ function atUpdateTimeDisplay() {
   }
 }
 
+let editingTaskId = null;
+
 function openAddTask() {
   if(!getTodoistToken()) { openTodoistSettings(); return; }
+  editingTaskId = null;
   // Reset state — all blank
   atSelectedProject  = { id: '', name: '' };
   atSelectedPriority = { value: '', label: '' };
   atSelectedDate = null; atSelectedHour = null; atSelectedMin = null;
-  // Update displays — show placeholders
-  document.getElementById('atProjectLabel').textContent  = 'Project…';
+  document.getElementById('atContent').value = '';
+  document.getElementById('atDescription').value = '';
+  document.getElementById('atProjectLabel').textContent = 'Project…';
   document.getElementById('atProjectLabel').classList.add('at-dp-placeholder');
   document.getElementById('atPriorityLabel').textContent = 'Priority…';
   document.getElementById('atPriorityLabel').classList.add('at-dp-placeholder');
   atUpdateDisplay();
   atUpdateTimeDisplay();
-  // Populate project options
+  // Modal title & buttons
+  document.getElementById('atModalTitle').textContent = 'New Task';
+  document.getElementById('atSaveBtn').textContent = 'Add Task';
+  document.getElementById('atSaveBtn').onclick = saveAddTask;
+  document.getElementById('atDeleteBtn').style.display = 'none';
   atRenderProjectOptions();
   atRenderPriorityOptions();
-  document.getElementById('atContent').value = '';
-  document.getElementById('atDescription').value = '';
   document.getElementById('addTaskModal').classList.add('open');
   setTimeout(() => document.getElementById('atContent').focus(), 80);
+}
+
+function openEditTask(id) {
+  if(!getTodoistToken()) return;
+  const task = todoistTasks.find(t => t.id === id);
+  if(!task) return;
+  editingTaskId = id;
+
+  // Populate fields from task
+  document.getElementById('atContent').value = task.content || '';
+  document.getElementById('atDescription').value = task.description || '';
+
+  // Project
+  const proj = todoistProjects[task.project_id];
+  if(proj && proj.name !== 'Inbox') {
+    atSelectedProject = { id: task.project_id, name: proj.name };
+    document.getElementById('atProjectLabel').textContent = proj.name;
+    document.getElementById('atProjectLabel').classList.remove('at-dp-placeholder');
+  } else {
+    atSelectedProject = { id: '', name: '' };
+    document.getElementById('atProjectLabel').textContent = 'Project…';
+    document.getElementById('atProjectLabel').classList.add('at-dp-placeholder');
+  }
+
+  // Priority (Todoist: 4=urgent, 1=normal)
+  const priMap = { 4: { value: '4', label: 'Urgent' }, 3: { value: '3', label: 'High' }, 2: { value: '2', label: 'Medium' } };
+  if(priMap[task.priority]) {
+    atSelectedPriority = priMap[task.priority];
+    document.getElementById('atPriorityLabel').textContent = priMap[task.priority].label;
+    document.getElementById('atPriorityLabel').classList.remove('at-dp-placeholder');
+  } else {
+    atSelectedPriority = { value: '', label: '' };
+    document.getElementById('atPriorityLabel').textContent = 'Priority…';
+    document.getElementById('atPriorityLabel').classList.add('at-dp-placeholder');
+  }
+
+  // Due date & time
+  atSelectedDate = null; atSelectedHour = null; atSelectedMin = null;
+  if(task.due) {
+    const dueObj = typeof task.due === 'string' ? { date: task.due } : task.due;
+    if(dueObj.date) atSelectedDate = dueObj.date.slice(0, 10);
+    if(dueObj.datetime && dueObj.datetime.length > 10) {
+      const dt = new Date(dueObj.datetime);
+      if(!isNaN(dt.getTime())) {
+        atSelectedHour = String(dt.getHours()).padStart(2, '0');
+        atSelectedMin  = String(dt.getMinutes()).padStart(2, '0');
+      }
+    }
+  }
+  atUpdateDisplay();
+  atUpdateTimeDisplay();
+
+  // Modal title & buttons
+  document.getElementById('atModalTitle').textContent = 'Edit Task';
+  document.getElementById('atSaveBtn').textContent = 'Save';
+  document.getElementById('atSaveBtn').onclick = saveEditTask;
+  document.getElementById('atDeleteBtn').style.display = '';
+  atRenderProjectOptions();
+  atRenderPriorityOptions();
+  document.getElementById('addTaskModal').classList.add('open');
+  setTimeout(() => document.getElementById('atContent').focus(), 80);
+}
+
+async function saveEditTask() {
+  const content = document.getElementById('atContent').value.trim();
+  if(!content) { document.getElementById('atContent').focus(); return; }
+  if(!editingTaskId) return;
+
+  const priority     = parseInt(atSelectedPriority.value) || 1;
+  const dueDate      = atSelectedDate;
+  const reminderTime = (atSelectedHour && atSelectedMin) ? `${atSelectedHour}:${atSelectedMin}` : '';
+  const description  = document.getElementById('atDescription').value.trim();
+  const projectId    = atSelectedProject.id;
+
+  closeModal('addTaskModal');
+
+  try {
+    const uuid = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+    const args = { id: editingTaskId, content, priority, description: description || '' };
+    if(projectId) args.project_id = projectId;
+    if(dueDate && reminderTime) args.due = { date: dueDate, string: `${dueDate} ${reminderTime}` };
+    else if(dueDate) args.due = { date: dueDate };
+    else args.due = null;
+
+    await todoistSync({ commands: JSON.stringify([{ type: 'item_update', uuid, args }]) });
+
+    // Update local cache
+    const task = todoistTasks.find(t => t.id === editingTaskId);
+    if(task) {
+      task.content     = content;
+      task.priority    = priority;
+      task.description = description;
+      task.due         = dueDate ? { date: dueDate } : null;
+      if(projectId) task.project_id = projectId;
+    }
+    editingTaskId = null;
+    renderTodoist();
+  } catch(e) {
+    console.error('Edit task failed:', e);
+  }
+}
+
+async function deleteEditTask() {
+  if(!editingTaskId) return;
+  const id = editingTaskId;
+  closeModal('addTaskModal');
+
+  try {
+    const uuid = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+    await todoistSync({ commands: JSON.stringify([{ type: 'item_delete', uuid, args: { id } }]) });
+    todoistTasks = todoistTasks.filter(t => t.id !== id);
+    editingTaskId = null;
+    renderTodoist();
+  } catch(e) {
+    console.error('Delete task failed:', e);
+  }
 }
 
 async function saveAddTask() {
