@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.5.1';
+const APP_VERSION = '5.5.2';
 
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
@@ -1015,36 +1015,46 @@ function getEventsInWindow(windowStart, windowEnd) {
 function isCaldavEvent(calName) {
   const cals = loadIcsCalendars();
   const cal = cals.find(c => c.name === calName);
-  return cal && /caldav\.fastmail\.com/.test(cal.url);
+  if (!cal) return false;
+  // Fastmail ICS feeds use user.fm or caldav.fastmail.com
+  if (/user\.fm\/calendar|caldav\.fastmail\.com/.test(cal.url)) return true;
+  return false;
 }
 
-// Find CalDAV calendar URL for a given calName
+// Build CalDAV PUT/DELETE URL for an event in a Fastmail calendar
 function getCaldavCalUrl(calName) {
-  const cals = loadIcsCalendars();
-  const cal = cals.find(c => c.name === calName);
-  if (!cal) return null;
-  // ICS feed URL is like: https://caldav.fastmail.com/dav/calendars/user/xxx/calendarname/
-  // CalDAV PUT URL for event: same base + uid.ics
-  const m = cal.url.match(/(https:\/\/caldav\.fastmail\.com\/dav\/calendars\/user\/[^?]+)/);
-  return m ? m[1].replace(/\/$/, '') + '/' : null;
+  const { user } = getCaldavCreds();
+  if (!user) return null;
+  // Use PROPFIND-discovered calendars if available
+  const aeCal = aeCalendars.find(c => c.displayName === calName);
+  if (aeCal && aeCal.url) return aeCal.url.replace(/\/$/, '') + '/';
+  // Fallback: build URL from calName slug
+  // Fastmail CalDAV URL pattern: https://caldav.fastmail.com/dav/calendars/user/{email}/{calendarId}/
+  // We can't reliably guess the calendarId from the name, so try PROPFIND first
+  return null;
 }
 
 // Edit event state
 let editingEvent = null;
 
-function openEditEvent(uid) {
+async function openEditEvent(uid) {
   // Find the raw event in icsRawCache
   const raw = icsRawCache.find(e => e.uid === uid);
   if (!raw) return;
   if (raw.rrule) return; // recurring events not editable
+
+  const { user } = getCaldavCreds();
+  if (!user) { openCaldavSettings(); return; }
 
   editingEvent = { ...raw };
 
   // Reuse the Add Event modal
   document.getElementById('aeModalTitle').textContent = 'Edit Event';
   document.getElementById('aeSubmitBtn').textContent = 'Save';
+  document.getElementById('aeSubmitBtn').disabled = false;
   document.getElementById('aeSubmitBtn').onclick = saveEditEvent;
   document.getElementById('aeDeleteBtn').style.display = '';
+  document.getElementById('aeDeleteBtn').disabled = false;
   document.getElementById('aeStatus').textContent = '';
   document.getElementById('aeStatus').style.color = '';
 
@@ -1052,12 +1062,19 @@ function openEditEvent(uid) {
   document.getElementById('aeTitle').value = raw.title || '';
   document.getElementById('aeLocation').value = raw.location || '';
 
-  // Calendar — find and select matching CalDAV calendar
+  // Fetch CalDAV calendars and then select matching one
+  await aeFetchCalendars();
   const calIdx = aeCalendars.findIndex(c => c.displayName === raw.calName);
   if (calIdx >= 0) {
     aeState.calUrl = aeCalendars[calIdx].url;
     aeState.calName = aeCalendars[calIdx].displayName;
     document.getElementById('aeCalLabel').textContent = aeCalendars[calIdx].displayName;
+    document.getElementById('aeCalLabel').classList.remove('at-dp-placeholder');
+  } else {
+    // Calendar not found via PROPFIND — set name anyway
+    aeState.calUrl = null;
+    aeState.calName = raw.calName;
+    document.getElementById('aeCalLabel').textContent = raw.calName;
     document.getElementById('aeCalLabel').classList.remove('at-dp-placeholder');
   }
 
@@ -1075,7 +1092,6 @@ function openEditEvent(uid) {
   // End date/time
   if (raw.end) {
     const e = new Date(raw.end);
-    // For all-day events, DTEND is exclusive (next day), so subtract 1
     if (raw.allDay) e.setDate(e.getDate() - 1);
     aeState.endDate = `${e.getFullYear()}-${String(e.getMonth()+1).padStart(2,'0')}-${String(e.getDate()).padStart(2,'0')}`;
     if (!raw.allDay) {
@@ -1098,7 +1114,6 @@ function openEditEvent(uid) {
   aeUpdateDateDisplay('end');
   aeUpdateTimeDisplay('start');
   aeUpdateTimeDisplay('end');
-  aeFetchCalendars();
 
   document.getElementById('addEventModal').classList.add('open');
   setTimeout(() => document.getElementById('aeTitle').focus(), 80);
