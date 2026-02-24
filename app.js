@@ -1773,13 +1773,15 @@ function atUpdateTimeDisplay() {
 
 function openAddTask() {
   if(!getTodoistToken()) { openTodoistSettings(); return; }
-  // Reset state
-  atSelectedProject  = { id: '', name: 'Inbox' };
-  atSelectedPriority = { value: '1', label: 'Normal' };
+  // Reset state — all blank
+  atSelectedProject  = { id: '', name: '' };
+  atSelectedPriority = { value: '', label: '' };
   atSelectedDate = null; atSelectedHour = null; atSelectedMin = null;
-  // Update displays
-  document.getElementById('atProjectLabel').textContent  = 'Inbox';
-  document.getElementById('atPriorityLabel').textContent = 'Normal';
+  // Update displays — show placeholders
+  document.getElementById('atProjectLabel').textContent  = 'Project…';
+  document.getElementById('atProjectLabel').classList.add('at-dp-placeholder');
+  document.getElementById('atPriorityLabel').textContent = 'Priority…';
+  document.getElementById('atPriorityLabel').classList.add('at-dp-placeholder');
   atUpdateDisplay();
   atUpdateTimeDisplay();
   // Populate project options
@@ -2526,7 +2528,7 @@ let aeState = {
 function aeRenderCalendarOptions() {
   const el = document.getElementById('aeCalOptions');
   if (!el) return;
-  const filtered = aeCalendars.filter(c => c.displayName !== 'DEFAULT_TASK_CALENDAR');
+  const filtered = aeCalendars.filter(c => !c.displayName.toLowerCase().includes('default_task'));
   if (!filtered.length) {
     el.innerHTML = '<div style="padding:.4rem .6rem;font-size:.82rem;color:var(--text-lt)">No calendars found. Check credentials.</div>';
     return;
@@ -2784,8 +2786,8 @@ function openAddEvent() {
   if (!user) { openCaldavSettings(); return; }
   const now = new Date();
   aeState = {
-    calUrl:  aeCalendars[0]?.url  || null,
-    calName: aeCalendars[0]?.displayName || null,
+    calUrl:  null,
+    calName: null,
     startDate: null, startH: null, startM: null,
     endDate: null,   endH: null,   endM: null,
     calYear:  { start: now.getFullYear(), end: now.getFullYear() },
@@ -2805,14 +2807,9 @@ function openAddEvent() {
   });
   document.getElementById('aeSubmitBtn').disabled    = false;
   document.getElementById('aeSubmitBtn').textContent = 'Add Event';
-  if (aeCalendars.length) {
-    document.getElementById('aeCalLabel').textContent = aeCalendars[0].displayName;
-    document.getElementById('aeCalLabel').classList.remove('at-dp-placeholder');
-  } else {
-    document.getElementById('aeCalLabel').textContent = 'Select calendar…';
-    document.getElementById('aeCalLabel').classList.add('at-dp-placeholder');
-    aeFetchCalendars();
-  }
+  document.getElementById('aeCalLabel').textContent = 'Select calendar…';
+  document.getElementById('aeCalLabel').classList.add('at-dp-placeholder');
+  if (!aeCalendars.length) aeFetchCalendars();
   aeCloseAllPopups();
   document.getElementById('addEventModal').classList.add('open');
 }
