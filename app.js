@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.4';
+const APP_VERSION = '5.4.1';
 
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
@@ -703,9 +703,11 @@ function openBackup() {
 function doExport() {
   const data = KVStore.exportAll(BACKUP_KEYS);
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const now = new Date();
+  const date = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'startpage-settings.json';
+  a.download = `startpage-settings-${date}.json`;
   a.click();
   URL.revokeObjectURL(a.href);
 }
@@ -1375,6 +1377,8 @@ function updateFilterBtn() {
   btn.textContent = FILTER_LABELS[todoistFilter] || 'Today';
 }
 
+let todoistNotes = {}; // task_id -> [note texts]
+
 async function loadTodoist() {
   const token = getTodoistToken();
   const list  = document.getElementById('todoistList');
@@ -1382,11 +1386,17 @@ async function loadTodoist() {
   if(!token) { renderTodoist(); return; }
   list.innerHTML = '<div class="td-empty">Loading…</div>';
   try {
-    const data = await todoistSync({ sync_token: '*', resource_types: '["items","projects"]' });
+    const data = await todoistSync({ sync_token: '*', resource_types: '["items","projects","notes"]' });
     if(data.error) { list.innerHTML = `<div class="td-empty">Error: ${data.error}</div>`; return; }
     todoistProjects = {};
     (data.projects || []).forEach(p => { todoistProjects[p.id] = { name: p.name, color: p.color }; });
     todoistTasks = (data.items || []).filter(t => !t.checked && !t.is_deleted);
+    todoistNotes = {};
+    (data.notes || []).forEach(n => {
+      if (!n.item_id || n.is_deleted) return;
+      if (!todoistNotes[n.item_id]) todoistNotes[n.item_id] = [];
+      todoistNotes[n.item_id].push(n.content);
+    });
     renderTodoist();
   } catch(e) {
     list.innerHTML = `<div class="td-empty">Could not reach Todoist.<br><span style="font-size:.75em;opacity:.7">${e.message}</span></div>`;
@@ -1493,11 +1503,15 @@ function renderTodoist() {
     const projBadge = projName && projName !== 'Inbox'
       ? `<div class="td-project-badge" style="background:${projColor}22;color:${projColor}">${projName}</div>` : '';
 
+    const hasNotes = todoistNotes[t.id] && todoistNotes[t.id].length > 0;
+    const notesIcon = hasNotes
+      ? `<button class="td-notes-btn" onclick="event.stopPropagation();showTaskNotes('${t.id}',this)" title="View notes"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg></button>` : '';
+
     return `<div class="td-task" data-id="${t.id}">
       <button class="td-check" onclick="completeTodoistTask('${t.id}')" title="Complete"></button>
       <div class="td-body ${pClass}">
         ${projBadge}
-        <div class="td-title">${t.content}</div>
+        <div class="td-title">${t.content}${notesIcon}</div>
         ${dueHtml}
       </div>
     </div>`;
@@ -1516,6 +1530,34 @@ async function completeTodoistTask(id) {
     if(btn) { btn.classList.remove('done'); btn.disabled = false; }
     console.error('Complete task failed:', e);
   }
+}
+
+function showTaskNotes(taskId, btn) {
+  // Remove any existing popup
+  const old = document.getElementById('taskNotesPopup');
+  if (old) old.remove();
+
+  const notes = todoistNotes[taskId];
+  if (!notes || !notes.length) return;
+
+  const popup = document.createElement('div');
+  popup.id = 'taskNotesPopup';
+  popup.style.cssText = 'position:fixed;z-index:600;background:var(--bg-card);border:1px solid var(--border);border-radius:3px;padding:1rem;width:260px;box-shadow:0 4px 20px var(--shadow);font-family:"EB Garamond",serif;font-size:.9rem;line-height:1.6;color:var(--text-mid);max-height:200px;overflow-y:auto;scrollbar-width:none';
+  popup.innerHTML = notes.map(n => `<p style="margin-bottom:.6rem">${n.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>`).join('');
+
+  // Position near the button
+  const rect = btn.getBoundingClientRect();
+  document.body.appendChild(popup);
+  popup.style.left = Math.min(rect.left, window.innerWidth - 280) + 'px';
+  popup.style.top = (rect.bottom + 6) + 'px';
+
+  // Close on click outside
+  setTimeout(() => {
+    const handler = (e) => {
+      if (!popup.contains(e.target)) { popup.remove(); document.removeEventListener('click', handler); }
+    };
+    document.addEventListener('click', handler);
+  }, 0);
 }
 
 // ── ADD TASK CUSTOM DATE PICKER ──
