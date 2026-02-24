@@ -3,8 +3,6 @@
 // ═══════════════════════════════════════════════════════════════════
 
 const APP_VERSION = '5.4';
-const el = document.getElementById('jsVersion');
-if (el) el.textContent = 'js ' + APP_VERSION;
 
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
@@ -391,6 +389,7 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 document.getElementById('linkModal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeModal('linkModal'); });
 document.getElementById('feedModal').addEventListener('click',e=>{ if(e.target===e.currentTarget) { editingFeedIdx=-1; closeModal('feedModal'); } });
 renderLinks();
+document.getElementById('jsVersion').textContent = 'js ' + APP_VERSION;
 
 // ── RSS FEEDS ──
 const DEFAULT_FEEDS = [];
