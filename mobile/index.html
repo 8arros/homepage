@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Home">
+<meta name="theme-color" content="#ead4a8">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<title>Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Raleway:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-top:    #ffffff;
+    --bg-bot:    #ead4a8;
+    --bg-card:   #ede4d2;
+    --bg-input:  #e8ddc8;
+    --border:    #c9b99a;
+    --border-lt: #ddd0b8;
+    --text:      #3d2b1f;
+    --text-mid:  #6b4c36;
+    --text-lt:   #9a7960;
+    --accent:    #7c4e2a;
+    --accent-lt: #a3683e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    background: linear-gradient(to bottom, var(--bg-top), var(--bg-bot));
+    min-height: 100dvh;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Login ── */
+  #loginScreen {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100dvh; padding: 2rem;
+  }
+  .login-box {
+    background: var(--bg-card); border: 1px solid var(--border-lt);
+    border-radius: 4px; padding: 2rem; width: 100%; max-width: 320px;
+    text-align: center;
+  }
+  .login-box h2 {
+    font-family: 'Cormorant Garamond', serif; font-size: 1.8rem;
+    font-weight: 300; letter-spacing: .08em; color: var(--accent); margin-bottom: 1.2rem;
+  }
+  .login-box input {
+    display: block; width: 100%; padding: .6rem .8rem;
+    background: var(--bg-input); border: 1px solid var(--border-lt);
+    border-radius: 2px; font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem; color: var(--text); outline: none;
+    margin-bottom: .7rem; transition: border-color .18s;
+  }
+  .login-box input:focus { border-color: var(--accent); }
+  .login-box button {
+    width: 100%; padding: .55rem; background: var(--accent); color: #fdf6e8;
+    border: none; border-radius: 2px; font-family: 'Raleway', sans-serif;
+    font-size: .7rem; letter-spacing: .2em; text-transform: uppercase;
+    cursor: pointer; transition: background .18s;
+  }
+  .login-box button:hover { background: var(--accent-lt); }
+  #loginError { color: var(--text-lt); font-size: .82rem; margin-top: .5rem; min-height: 1.2rem; }
+
+  /* ── App ── */
+  #app { display: none; }
+
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.2rem .6rem;
+  }
+  .logo {
+    font-family: 'Cormorant Garamond', serif; font-size: 1.5rem;
+    font-weight: 300; letter-spacing: .08em; color: var(--accent);
+  }
+  .date-str {
+    font-family: 'Raleway', sans-serif; font-size: .6rem; font-weight: 300;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--text-mid);
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex; gap: 0; padding: 0 1.2rem;
+    border-bottom: 1px solid var(--border-lt); margin-bottom: 0;
+  }
+  .tab-btn {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: .4rem;
+    padding: .6rem .5rem; background: none; border: none;
+    border-bottom: 2px solid transparent;
+    font-family: 'Raleway', sans-serif; font-size: .58rem;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--text-lt);
+    cursor: pointer; transition: color .18s, border-color .18s;
+  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn svg { width: .9rem; height: .9rem; }
+
+  /* ── Content ── */
+  .content { padding: 1rem 1.2rem 2rem; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .briefing-body {
+    font-family: 'Cormorant Garamond', serif; font-size: 1rem;
+    line-height: 1.6; color: var(--text);
+  }
+  .briefing-body p { margin-bottom: .9rem; }
+
+  .briefing-empty {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    color: var(--text-lt); font-size: .95rem; text-align: center; padding: 2rem 0;
+  }
+
+  .refresh-row {
+    display: flex; justify-content: flex-end; margin-bottom: .8rem;
+  }
+  .refresh-btn {
+    background: none; border: none; cursor: pointer; color: var(--text-lt);
+    font-family: 'Raleway', sans-serif; font-size: .55rem;
+    letter-spacing: .15em; text-transform: uppercase;
+    display: flex; align-items: center; gap: .3rem;
+    transition: color .18s;
+  }
+  .refresh-btn:hover { color: var(--accent); }
+  .refresh-btn svg { width: .85rem; height: .85rem; }
+
+  /* ── Notes ── */
+  .notes-area {
+    width: 100%; min-height: 50dvh; resize: none;
+    background: var(--bg-input); border: 1px solid var(--border-lt);
+    border-radius: 2px; padding: .8rem; outline: none;
+    font-family: 'Cormorant Garamond', serif; font-size: .95rem;
+    line-height: 1.7; color: var(--text);
+  }
+  .notes-area:focus { border-color: var(--accent); }
+  .notes-actions {
+    display: flex; justify-content: flex-end; margin-top: .5rem;
+  }
+  .clear-btn {
+    background: none; border: none; cursor: pointer;
+    font-family: 'Raleway', sans-serif; font-size: .55rem;
+    letter-spacing: .15em; text-transform: uppercase; color: var(--text-lt);
+    transition: color .18s;
+  }
+  .clear-btn:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <h2>Home</h2>
+    <!-- Token setup (shown first if no kv_token) -->
+    <div id="tokenSetup" style="display:none">
+      <p style="font-family:'Cormorant Garamond',serif;font-size:.88rem;color:var(--text-lt);line-height:1.5;margin-bottom:.8rem">
+        Paste your sync token from the desktop Settings to access your data.
+      </p>
+      <input type="text" id="tokenInput" placeholder="Paste sync token here"
+        autocomplete="off" style="font-size:.85rem;letter-spacing:.02em">
+      <button onclick="applyToken()">Connect</button>
+      <div id="tokenError" style="color:var(--text-lt);font-size:.82rem;margin-top:.5rem;min-height:1.2rem"></div>
+      <div style="margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--border-lt)">
+        <p style="font-family:'Cormorant Garamond',serif;font-size:.82rem;color:var(--text-lt);line-height:1.4">
+          Or continue without syncing (fresh start).
+        </p>
+        <button onclick="skipToken()" style="background:var(--bg-input);color:var(--text-mid);margin-top:.4rem">Skip</button>
+      </div>
+    </div>
+    <!-- Login form -->
+    <div id="loginForm">
+      <input type="text" id="loginUser" placeholder="Username" autocomplete="username"
+        onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
+      <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')doLogin()">
+      <button onclick="doLogin()">Login</button>
+      <div id="loginError"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="header">
+    <span class="logo">Home</span>
+    <span class="date-str" id="dateStr"></span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tabDaily" onclick="switchTab('daily')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Daily
+    </button>
+    <button class="tab-btn" id="tabSports" onclick="switchTab('sports')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 9l6 6 6-6"/><path d="M2 17h20"/><path d="M4 17V7a2 2 0 012-2h12a2 2 0 012 2v10"/></svg>
+      Sports
+    </button>
+    <button class="tab-btn" id="tabNotes" onclick="switchTab('notes')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+      Notes
+    </button>
+  </div>
+
+  <!-- Daily Briefing -->
+  <div class="content">
+    <div class="panel active" id="panelDaily">
+      <div class="refresh-row">
+        <button class="refresh-btn" id="refreshDaily" onclick="refreshBriefing('daily')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+      </div>
+      <div class="briefing-body" id="dailyBody">
+        <div class="briefing-empty">Loading briefing…</div>
+      </div>
+    </div>
+
+    <!-- Sports Briefing -->
+    <div class="panel" id="panelSports">
+      <div class="refresh-row">
+        <button class="refresh-btn" id="refreshSports" onclick="refreshBriefing('sports')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+      </div>
+      <div class="briefing-body" id="sportsBody">
+        <div class="briefing-empty">Loading sports briefing…</div>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="panel" id="panelNotes">
+      <textarea class="notes-area" id="notesArea" placeholder="Write your notes here…"
+        oninput="saveNotes()"></textarea>
+      <div class="notes-actions">
+        <button class="clear-btn" id="clearBtn" style="display:none" onclick="clearNotes()">✕ Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// ── CONFIG ──
+// ═══════════════════════════════════════════════
+const API_BASE = 'https://api.barros.work';
+
+// ── Auth ──
+function getAuthToken() {
+  const m = document.cookie.match(/(?:^|;\s*)auth_token=([^;]+)/);
+  return m ? m[1] : null;
+}
+function setAuthToken(token, maxAge) {
+  document.cookie = `auth_token=${token};path=/;max-age=${maxAge};SameSite=Strict;Secure`;
+}
+function authFetch(url, opts = {}) {
+  const token = getAuthToken();
+  if (token) {
+    opts.headers = opts.headers || {};
+    opts.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return fetch(url, opts);
+}
+
+async function doLogin() {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const err  = document.getElementById('loginError');
+  err.textContent = '';
+  if (!user || !pass) { err.textContent = 'Please enter credentials.'; return; }
+  try {
+    const res = await fetch(`${API_BASE}/auth`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user, pass }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.token) { err.textContent = 'Invalid credentials.'; return; }
+    setAuthToken(data.token, data.expires_in || 2592000);
+    startApp();
+  } catch { err.textContent = 'Connection error.'; }
+}
+
+function showLogin() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  // Check if kv_token exists — if not, show token setup first
+  const hasKvToken = document.cookie.match(/(?:^|;\s*)kv_token=([^;]+)/);
+  if (!hasKvToken) {
+    document.getElementById('tokenSetup').style.display = '';
+    document.getElementById('loginForm').style.display = 'none';
+  } else {
+    document.getElementById('tokenSetup').style.display = 'none';
+    document.getElementById('loginForm').style.display = '';
+  }
+}
+
+function applyToken() {
+  const input = document.getElementById('tokenInput').value.trim();
+  const err = document.getElementById('tokenError');
+  err.textContent = '';
+  // Accept either a raw token or a full URL with ?token=
+  let token = input;
+  try {
+    const url = new URL(input);
+    const t = url.searchParams.get('token');
+    if (t) token = t;
+  } catch {}
+  if (!token || token.length < 16) {
+    err.textContent = 'Invalid token. Paste the full URL or token from Settings.';
+    return;
+  }
+  document.cookie = `kv_token=${token};path=/;max-age=31536000;SameSite=Strict`;
+  // Show login form
+  document.getElementById('tokenSetup').style.display = 'none';
+  document.getElementById('loginForm').style.display = '';
+  document.getElementById('loginUser').focus();
+}
+
+function skipToken() {
+  document.getElementById('tokenSetup').style.display = 'none';
+  document.getElementById('loginForm').style.display = '';
+  document.getElementById('loginUser').focus();
+}
+
+async function checkAuth() {
+  // Handle ?token= in URL first
+  getKvToken();
+  const token = getAuthToken();
+  if (!token) { showLogin(); return; }
+  try {
+    const res = await fetch(`${API_BASE}/auth/verify`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (data.valid) startApp();
+    else { document.cookie = 'auth_token=;path=/;max-age=0'; showLogin(); }
+  } catch { startApp(); }
+}
+
+// ═══════════════════════════════════════════════
+// ── KVStore (minimal — read from remote) ──
+// ═══════════════════════════════════════════════
+const kvCache = new Map();
+function getKvToken() {
+  // Check URL param first (for syncing from desktop)
+  const urlToken = new URLSearchParams(location.search).get('token');
+  if (urlToken && urlToken.length >= 16) {
+    document.cookie = `kv_token=${urlToken};path=/;max-age=31536000;SameSite=Strict`;
+    // Clean URL
+    const u = new URL(location.href);
+    u.searchParams.delete('token');
+    history.replaceState(null, '', u.toString());
+    return urlToken;
+  }
+  const m = document.cookie.match(/(?:^|;\s*)kv_token=([^;]+)/);
+  if (m) return m[1];
+  const t = crypto.randomUUID() + crypto.randomUUID().slice(0,8);
+  document.cookie = `kv_token=${t};path=/;max-age=31536000;SameSite=Strict`;
+  return t;
+}
+async function kvFetch(method, path, body) {
+  const opts = { method, headers: { 'x-settings-token': getKvToken() } };
+  if (body !== undefined) {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  }
+  try {
+    const res = await authFetch(`${API_BASE}${path}`, opts);
+    return await res.json();
+  } catch { return null; }
+}
+async function kvLoadAll() {
+  const data = await kvFetch('GET', '/kv/all');
+  if (data?.data) for (const [k,v] of Object.entries(data.data)) kvCache.set(k, v);
+}
+function kvGet(key) { return kvCache.get(key) ?? null; }
+function kvSet(key, value) {
+  kvCache.set(key, String(value));
+  kvFetch('POST', '/kv/set', { entries: { [key]: String(value) } });
+}
+function kvRemove(key) {
+  kvCache.delete(key);
+  kvFetch('DELETE', `/kv/delete/${encodeURIComponent(key)}`);
+}
+
+// ═══════════════════════════════════════════════
+// ── BRIEFING ──
+// ═══════════════════════════════════════════════
+function getBriefingPeriod() {
+  const h = new Date().getHours();
+  if (h < 12) return 'morning';
+  if (h < 18) return 'afternoon';
+  return 'evening';
+}
+function getBriefingCacheKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}_${getBriefingPeriod()}`;
+}
+function getSportsCacheKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}_${getBriefingPeriod()}`;
+}
+
+function renderText(el, text) {
+  if (!text) { el.innerHTML = '<div class="briefing-empty">No briefing available.</div>'; return; }
+  if (text.startsWith('<')) { el.innerHTML = text; return; }
+  el.innerHTML = text.trim().split(/\n\n+/).map(p => `<p>${p.trim()}</p>`).join('');
+}
+
+function loadDailyFromCache() {
+  const key = kvGet('briefing_date');
+  const txt = kvGet('briefing_cache');
+  if (key === getBriefingCacheKey() && txt) {
+    renderText(document.getElementById('dailyBody'), txt);
+    return true;
+  }
+  return false;
+}
+function loadSportsFromCache() {
+  const key = kvGet('sports_briefing_date');
+  const txt = kvGet('sports_briefing_cache');
+  if (key === getSportsCacheKey() && txt) {
+    renderText(document.getElementById('sportsBody'), txt);
+    return true;
+  }
+  return false;
+}
+
+async function refreshBriefing(type) {
+  const el  = document.getElementById(type === 'daily' ? 'dailyBody' : 'sportsBody');
+  const btn = document.getElementById(type === 'daily' ? 'refreshDaily' : 'refreshSports');
+  const apiKey = kvGet('claude_api_key');
+  if (!apiKey) { el.innerHTML = '<div class="briefing-empty">Configure Claude API key in the desktop version.</div>'; return; }
+
+  el.innerHTML = '<div class="briefing-empty">Generating…</div>';
+  if (btn) btn.disabled = true;
+
+  try {
+    // For daily briefing, build a simple prompt from available data
+    const period = getBriefingPeriod();
+    let prompt;
+
+    if (type === 'daily') {
+      // Gather data from KV
+      const todoistToken = kvGet('todoist_api_token');
+      const weatherLoc = kvGet('weather_location');
+      let todoData = '', weatherData = '';
+
+      // Fetch todoist tasks
+      if (todoistToken) {
+        try {
+          const syncParams = new URLSearchParams();
+          syncParams.set('sync_token', '*');
+          syncParams.set('resource_types', '["items","projects"]');
+          const tres = await authFetch(`${API_BASE}/todoist`, {
+            method: 'POST',
+            headers: { 'x-todoist-token': todoistToken, 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: syncParams.toString(),
+          });
+          const tdata = await tres.json();
+          if (tdata.items) {
+            const active = tdata.items.filter(t => !t.checked && !t.is_deleted);
+            const today = new Date().toISOString().slice(0,10);
+            const upcoming = active.filter(t => t.due && t.due.date && t.due.date <= today).slice(0, 10);
+            if (upcoming.length) todoData = 'Tasks due today:\n' + upcoming.map(t => `- ${t.content}`).join('\n');
+          }
+        } catch {}
+      }
+
+      // Fetch weather
+      if (weatherLoc) {
+        try {
+          const loc = JSON.parse(weatherLoc);
+          const wres = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=3`);
+          const wdata = await wres.json();
+          if (wdata.current) {
+            weatherData = `Current weather: ${wdata.current.temperature_2m}°C`;
+            if (wdata.daily) {
+              weatherData += `\nToday: ${wdata.daily.temperature_2m_max[0]}°/${wdata.daily.temperature_2m_min[0]}°, precip ${wdata.daily.precipitation_probability_max[0]}%`;
+            }
+          }
+        } catch {}
+      }
+
+      const greeting = { morning: 'Good morning', afternoon: 'Good afternoon', evening: 'Good evening' }[period];
+      prompt = `You are a sharp personal assistant. Write a concise ${period} briefing.
+
+${weatherData ? 'Weather:\n' + weatherData + '\n\n' : ''}${todoData ? todoData + '\n\n' : ''}
+
+Rules:
+- Start with "${greeting}"
+- 2–3 short paragraphs, plain prose, no bullet points, no headers, no bold, no markdown
+- If there are tasks, mention the most important ones naturally
+- If there's weather data, weave it in naturally
+- Keep it warm and concise`;
+    } else {
+      // Sports — use ICS feeds from KV
+      const sportsRaw = kvGet('sports_calendars');
+      let sportsText = '';
+      if (sportsRaw) {
+        try {
+          const cals = JSON.parse(sportsRaw);
+          const results = await Promise.allSettled(cals.map(async c => {
+            const res = await authFetch(`${API_BASE}/?url=${encodeURIComponent(c.url)}`);
+            return await res.text();
+          }));
+          // Parse ICS and find upcoming events
+          const now = new Date();
+          const week = new Date(now.getTime() + 7 * 86400000);
+          const events = [];
+          for (const r of results) {
+            if (r.status !== 'fulfilled') continue;
+            const text = r.value;
+            const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\n[ \t]/g,'').split('\n');
+            let inEv = false, ev = {};
+            for (const line of lines) {
+              const l = line.trim();
+              if (l === 'BEGIN:VEVENT') { inEv = true; ev = {}; continue; }
+              if (l === 'END:VEVENT') {
+                if (ev.start && ev.title && ev.start >= now && ev.start <= week) events.push(ev);
+                inEv = false; continue;
+              }
+              if (!inEv) continue;
+              const ci = l.indexOf(':');
+              if (ci === -1) continue;
+              const key = l.slice(0,ci).split(';')[0].toUpperCase();
+              const val = l.slice(ci+1);
+              if (key === 'SUMMARY') ev.title = val.replace(/\\,/g,',').replace(/\\n/g,' ').trim();
+              if (key === 'DTSTART') {
+                const clean = val.replace(/[^0-9T]/g,'');
+                const y=+clean.slice(0,4), mo=+clean.slice(4,6)-1, d=+clean.slice(6,8);
+                if (clean.includes('T')) {
+                  const h=+clean.slice(9,11), mi=+clean.slice(11,13);
+                  ev.start = val.endsWith('Z') ? new Date(Date.UTC(y,mo,d,h,mi)) : new Date(y,mo,d,h,mi);
+                } else {
+                  ev.start = new Date(y,mo,d);
+                }
+              }
+            }
+          }
+          events.sort((a,b) => a.start - b.start);
+          if (events.length) {
+            sportsText = events.slice(0, 20).map(e => {
+              const d = e.start;
+              const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+              const time = d.getHours() ? `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}` : 'all day';
+              return `${days[d.getDay()]} ${d.getDate()}/${d.getMonth()+1} ${time} — ${e.title}`;
+            }).join('\n');
+          }
+        } catch {}
+      }
+
+      if (!sportsText) {
+        el.innerHTML = '<div class="briefing-empty">No sports events found.</div>';
+        if (btn) btn.disabled = false;
+        return;
+      }
+
+      const greeting = { morning: 'Good morning', afternoon: 'Good afternoon', evening: 'Good evening' }[period];
+      prompt = `You are a sports-savvy personal assistant. Write a concise sports briefing based on this schedule of upcoming events (times are Lisbon/Portugal time):
+
+${sportsText}
+
+Rules:
+- Start with "${greeting}" and a brief overview of what's coming up
+- 2–4 short paragraphs, plain prose, no bullet points, no headers, no bold, no markdown
+- Group by sport naturally: football first, then F1, then tennis
+- For football: mention the teams, competition, day and kick-off time
+- For F1: mention which GP, what sessions are coming
+- For tennis: mention tournament name and stage
+- Be warm and conversational
+- Write in English always`;
+    }
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    const data = await res.json();
+    const text = data?.content?.[0]?.text || 'Could not generate briefing.';
+
+    // Cache
+    if (type === 'daily') {
+      kvSet('briefing_cache', text);
+      kvSet('briefing_date', getBriefingCacheKey());
+    } else {
+      kvSet('sports_briefing_cache', text);
+      kvSet('sports_briefing_date', getSportsCacheKey());
+    }
+    renderText(el, text);
+  } catch (e) {
+    el.innerHTML = `<div class="briefing-empty" style="color:var(--err)">Error: ${e.message}</div>`;
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+// ═══════════════════════════════════════════════
+// ── NOTES ──
+// ═══════════════════════════════════════════════
+function loadNotes() {
+  const ta = document.getElementById('notesArea');
+  const v = kvGet('quick_notes') || '';
+  ta.value = v;
+  document.getElementById('clearBtn').style.display = v ? '' : 'none';
+}
+function saveNotes() {
+  const ta = document.getElementById('notesArea');
+  kvSet('quick_notes', ta.value);
+  document.getElementById('clearBtn').style.display = ta.value ? '' : 'none';
+}
+function clearNotes() {
+  if (!confirm('Clear all notes?')) return;
+  document.getElementById('notesArea').value = '';
+  kvRemove('quick_notes');
+  document.getElementById('clearBtn').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════
+// ── TABS ──
+// ═══════════════════════════════════════════════
+let activeTab = 'daily';
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+  if (tab === 'notes') loadNotes();
+}
+
+// ═══════════════════════════════════════════════
+// ── DATE DISPLAY ──
+// ═══════════════════════════════════════════════
+function updateDate() {
+  const d = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('dateStr').textContent =
+    `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// ═══════════════════════════════════════════════
+// ── START APP ──
+// ═══════════════════════════════════════════════
+async function startApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = '';
+  updateDate();
+
+  // Load settings from KV
+  await kvLoadAll();
+
+  // Daily briefing: load from cache or generate
+  if (!loadDailyFromCache()) {
+    refreshBriefing('daily');
+  }
+  // Sports briefing: load from cache or generate
+  if (!loadSportsFromCache()) {
+    refreshBriefing('sports');
+  }
+
+  // Auto-refresh: check every 60s if period changed
+  setInterval(() => {
+    const currentKey = getBriefingCacheKey();
+    const cachedKey = kvGet('briefing_date');
+    if (cachedKey !== currentKey) {
+      refreshBriefing('daily');
+    }
+    const sCurrentKey = getSportsCacheKey();
+    const sCachedKey = kvGet('sports_briefing_date');
+    if (sCachedKey !== sCurrentKey) {
+      refreshBriefing('sports');
+    }
+  }, 60000);
+}
+
+// ── Init ──
+checkAuth();
+</script>
+</body>
+</html>
