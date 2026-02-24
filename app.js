@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.4.1';
+const APP_VERSION = '5.4.2';
 
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
@@ -1503,7 +1503,9 @@ function renderTodoist() {
     const projBadge = projName && projName !== 'Inbox'
       ? `<div class="td-project-badge" style="background:${projColor}22;color:${projColor}">${projName}</div>` : '';
 
-    const hasNotes = todoistNotes[t.id] && todoistNotes[t.id].length > 0;
+    const hasComments = todoistNotes[t.id] && todoistNotes[t.id].length > 0;
+    const hasDescription = t.description && t.description.trim();
+    const hasNotes = hasComments || hasDescription;
     const notesIcon = hasNotes
       ? `<button class="td-notes-btn" onclick="event.stopPropagation();showTaskNotes('${t.id}',this)" title="View notes"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg></button>` : '';
 
@@ -1533,25 +1535,30 @@ async function completeTodoistTask(id) {
 }
 
 function showTaskNotes(taskId, btn) {
-  // Remove any existing popup
   const old = document.getElementById('taskNotesPopup');
   if (old) old.remove();
 
-  const notes = todoistNotes[taskId];
-  if (!notes || !notes.length) return;
+  const task = todoistTasks.find(t => t.id === taskId);
+  const comments = todoistNotes[taskId] || [];
+  const desc = task?.description?.trim() || '';
+  if (!desc && !comments.length) return;
+
+  const esc = s => s.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  let html = '';
+  if (desc) html += `<p style="margin-bottom:.6rem">${esc(desc)}</p>`;
+  if (desc && comments.length) html += '<hr style="border:none;border-top:1px solid var(--border-lt);margin:.6rem 0">';
+  html += comments.map(n => `<p style="margin-bottom:.6rem">${esc(n)}</p>`).join('');
 
   const popup = document.createElement('div');
   popup.id = 'taskNotesPopup';
   popup.style.cssText = 'position:fixed;z-index:600;background:var(--bg-card);border:1px solid var(--border);border-radius:3px;padding:1rem;width:260px;box-shadow:0 4px 20px var(--shadow);font-family:"EB Garamond",serif;font-size:.9rem;line-height:1.6;color:var(--text-mid);max-height:200px;overflow-y:auto;scrollbar-width:none';
-  popup.innerHTML = notes.map(n => `<p style="margin-bottom:.6rem">${n.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>`).join('');
+  popup.innerHTML = html;
 
-  // Position near the button
   const rect = btn.getBoundingClientRect();
   document.body.appendChild(popup);
   popup.style.left = Math.min(rect.left, window.innerWidth - 280) + 'px';
   popup.style.top = (rect.bottom + 6) + 'px';
 
-  // Close on click outside
   setTimeout(() => {
     const handler = (e) => {
       if (!popup.contains(e.target)) { popup.remove(); document.removeEventListener('click', handler); }
