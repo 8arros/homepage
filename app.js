@@ -2,6 +2,10 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
+const APP_VERSION = '5.4';
+const el = document.getElementById('jsVersion');
+if (el) el.textContent = 'js ' + APP_VERSION;
+
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
 const KVStore = (() => {
