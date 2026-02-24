@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.5.2';
+const APP_VERSION = '5.5.3';
 
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
@@ -1110,10 +1110,41 @@ async function openEditEvent(uid) {
   // Update all displays
   aeState.calMonth = { start: s.getMonth(), end: s.getMonth() };
   aeState.calYear  = { start: s.getFullYear(), end: s.getFullYear() };
-  aeUpdateDateDisplay('start');
-  aeUpdateDateDisplay('end');
-  aeUpdateTimeDisplay('start');
-  aeUpdateTimeDisplay('end');
+
+  // Start date display
+  if (aeState.startDate) {
+    const sd = new Date(aeState.startDate + 'T12:00:00');
+    document.getElementById('aeStartDateLabel').textContent = `${sd.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][sd.getMonth()]} ${sd.getFullYear()}`;
+    document.getElementById('aeStartDateLabel').classList.remove('at-dp-placeholder');
+  } else {
+    document.getElementById('aeStartDateLabel').textContent = 'No date';
+    document.getElementById('aeStartDateLabel').classList.add('at-dp-placeholder');
+  }
+  // End date display
+  if (aeState.endDate) {
+    const ed = new Date(aeState.endDate + 'T12:00:00');
+    document.getElementById('aeEndDateLabel').textContent = `${ed.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][ed.getMonth()]} ${ed.getFullYear()}`;
+    document.getElementById('aeEndDateLabel').classList.remove('at-dp-placeholder');
+  } else {
+    document.getElementById('aeEndDateLabel').textContent = 'No date';
+    document.getElementById('aeEndDateLabel').classList.add('at-dp-placeholder');
+  }
+  // Start time display
+  if (aeState.startH !== null && aeState.startM !== null) {
+    document.getElementById('aeStartTimeLabel').textContent = `${String(aeState.startH).padStart(2,'0')}:${String(aeState.startM).padStart(2,'0')}`;
+    document.getElementById('aeStartTimeLabel').classList.remove('at-dp-placeholder');
+  } else {
+    document.getElementById('aeStartTimeLabel').textContent = 'All day';
+    document.getElementById('aeStartTimeLabel').classList.add('at-dp-placeholder');
+  }
+  // End time display
+  if (aeState.endH !== null && aeState.endM !== null) {
+    document.getElementById('aeEndTimeLabel').textContent = `${String(aeState.endH).padStart(2,'0')}:${String(aeState.endM).padStart(2,'0')}`;
+    document.getElementById('aeEndTimeLabel').classList.remove('at-dp-placeholder');
+  } else {
+    document.getElementById('aeEndTimeLabel').textContent = 'All day';
+    document.getElementById('aeEndTimeLabel').classList.add('at-dp-placeholder');
+  }
 
   document.getElementById('addEventModal').classList.add('open');
   setTimeout(() => document.getElementById('aeTitle').focus(), 80);
