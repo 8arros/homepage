@@ -10,7 +10,7 @@ Weather, RSS feeds, quick links, and embedded Claude chat.
 ![Home](home.png)
 
 ### Calendar
-Monthly calendar with CalDAV events, Todoist tasks, and AI-generated sports briefing.
+Monthly calendar with CalDAV events, Todoist tasks, AI-generated daily briefing (weather, events, and tasks), and sports briefing.
 
 ![Calendar](calendar.png)
 
