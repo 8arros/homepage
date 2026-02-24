@@ -2528,7 +2528,7 @@ let aeState = {
 function aeRenderCalendarOptions() {
   const el = document.getElementById('aeCalOptions');
   if (!el) return;
-  const filtered = aeCalendars.filter(c => !c.displayName.toLowerCase().includes('default_task'));
+  const filtered = aeCalendars.filter(c => !/default.task.calendar/i.test(c.displayName));
   if (!filtered.length) {
     el.innerHTML = '<div style="padding:.4rem .6rem;font-size:.82rem;color:var(--text-lt)">No calendars found. Check credentials.</div>';
     return;
