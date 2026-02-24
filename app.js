@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.6.3';
+const APP_VERSION = '5.6.5';
 
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
@@ -1080,14 +1080,16 @@ async function openEditEvent(uid) {
   editingEvent = { ...raw };
 
   // Reuse the Add Event modal
-  document.getElementById('aeModalTitle').textContent = raw.rrule ? 'Edit Recurring Event' : 'Edit Event';
+  document.getElementById('aeModalTitle').innerHTML = raw.rrule
+    ? 'Edit Recurring Event <span style="font-size:.65rem;font-weight:300;letter-spacing:.05em;color:var(--text-lt)">(all occurrences)</span>'
+    : 'Edit Event';
   document.getElementById('aeSubmitBtn').textContent = 'Save';
   document.getElementById('aeSubmitBtn').disabled = false;
   document.getElementById('aeSubmitBtn').onclick = saveEditEvent;
   document.getElementById('aeDeleteBtn').style.display = '';
   document.getElementById('aeDeleteBtn').disabled = false;
-  document.getElementById('aeStatus').textContent = raw.rrule ? 'Changes will apply to all occurrences.' : '';
-  document.getElementById('aeStatus').style.color = raw.rrule ? 'var(--text-lt)' : '';
+  document.getElementById('aeStatus').textContent = '';
+  document.getElementById('aeStatus').style.color = '';
 
   // Fill in title and location
   document.getElementById('aeTitle').value = raw.title || '';
