@@ -2,6 +2,23 @@
 
 A minimal, elegant personal startpage built entirely by [Claude](https://claude.ai) (Anthropic) through iterative conversations with Barros. Every line of HTML, CSS, and JavaScript was written by Claude based on Barros's requirements and feedback — no templates, no frameworks, no manual coding.
 
+## Screenshots
+
+### Home
+Weather, RSS feeds, quick links, and embedded Claude chat.
+
+![Home](home.png)
+
+### Calendar
+Monthly calendar with CalDAV events, Todoist tasks, and AI-generated sports briefing.
+
+![Calendar](calendar.png)
+
+### Notes
+Quick notes scratchpad accessible from the header.
+
+![Notes](notes.png)
+
 ## What it does
 
 **Home** is a single-page dashboard designed to be a browser start page, combining daily essentials into one clean interface:
