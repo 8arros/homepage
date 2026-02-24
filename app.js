@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.6.1';
+const APP_VERSION = '5.6.3';
 
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
@@ -335,7 +335,7 @@ async function searchWeatherCity() {
       const label = [r.name, r.admin1, r.country].filter(Boolean).join(', ');
       const btn = document.createElement('button');
       btn.className = 'btn btn-cancel';
-      btn.style.cssText = 'width:100%;text-align:left;padding:.5rem .8rem;font-family:"EB Garamond",serif;font-size:.9rem;text-transform:none;letter-spacing:0';
+      btn.style.cssText = 'width:100%;text-align:left;padding:.5rem .8rem;font-family:"Cormorant Garamond",serif;font-size:.9rem;text-transform:none;letter-spacing:0';
       btn.textContent = label;
       btn.onclick = () => {
         saveWeatherLocation({ lat: r.latitude, lon: r.longitude, name: r.name });
@@ -574,7 +574,7 @@ function renderFeedList() {
   const filtered = activeFeedCat ? feeds.filter(f=>f.tab===activeFeedCat) : feeds;
   const list = document.getElementById('feedList');
   if (!filtered.length) {
-    list.innerHTML = '<div style="font-family:\'EB Garamond\',serif;font-style:italic;color:var(--text-lt);font-size:.9rem;padding:.5rem 0">No feeds configured.</div>';
+    list.innerHTML = '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;color:var(--text-lt);font-size:.9rem;padding:.5rem 0">No feeds configured.</div>';
     return;
   }
   list.innerHTML = '';
@@ -1394,7 +1394,7 @@ function openIcsManager() {
 function renderIcsList() {
   const cals = loadIcsCalendars();
   const el = document.getElementById('icsList');
-  if(!cals.length) { el.innerHTML='<div style="font-family:\'EB Garamond\',serif;font-style:italic;color:var(--text-lt);font-size:.9rem;padding:.5rem 0">No calendars configured.</div>'; return; }
+  if(!cals.length) { el.innerHTML='<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;color:var(--text-lt);font-size:.9rem;padding:.5rem 0">No calendars configured.</div>'; return; }
   el.innerHTML = cals.map((c,i) => `
     <div class="feed-row">
       <div style="display:flex;align-items:center;gap:.5rem;flex:1;min-width:0">
@@ -1872,7 +1872,7 @@ function showTaskNotes(taskId, btn) {
 
   const popup = document.createElement('div');
   popup.id = 'taskNotesPopup';
-  popup.style.cssText = 'position:fixed;z-index:600;background:var(--bg-card);border:1px solid var(--border);border-radius:3px;padding:1rem;width:260px;box-shadow:0 4px 20px var(--shadow);font-family:"EB Garamond",serif;font-size:.9rem;line-height:1.6;color:var(--text-mid);max-height:200px;overflow-y:auto;scrollbar-width:none';
+  popup.style.cssText = 'position:fixed;z-index:600;background:var(--bg-card);border:1px solid var(--border);border-radius:3px;padding:1rem;width:260px;box-shadow:0 4px 20px var(--shadow);font-family:"Cormorant Garamond",serif;font-size:.9rem;line-height:1.6;color:var(--text-mid);max-height:200px;overflow-y:auto;scrollbar-width:none';
   popup.innerHTML = html;
 
   const rect = btn.getBoundingClientRect();
@@ -2628,7 +2628,7 @@ function switchCalModalTab(tab) {
 function renderSportsList() {
   const cals = loadSportsCalendars();
   const el = document.getElementById('sportsList');
-  if (!cals.length) { el.innerHTML = '<div style="font-family:\'EB Garamond\',serif;font-style:italic;color:var(--text-lt);font-size:.9rem;padding:.5rem 0">No sports feeds configured.</div>'; return; }
+  if (!cals.length) { el.innerHTML = '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;color:var(--text-lt);font-size:.9rem;padding:.5rem 0">No sports feeds configured.</div>'; return; }
   el.innerHTML = cals.map((c, i) => `
     <div class="feed-row">
       <div class="feed-row-info" style="flex:1;min-width:0">
@@ -3394,12 +3394,22 @@ async function saveAddEvent() {
   if (user) aeFetchCalendars();
 })();
 function initCol3() {
-  // Load from cache if available for current period
+  // Load daily briefing from cache or generate
   const cachedKey  = KVStore.getItem(BRIEFING_DATE_KEY);
   const cachedText = KVStore.getItem(BRIEFING_KEY);
   const currentKey = getBriefingCacheKey();
   if(cachedKey === currentKey && cachedText) {
     renderBriefing(cachedText);
+  } else {
+    // No cache or stale — generate now
+    loadBriefing();
+  }
+  // Also load sports briefing into cache
+  const sCachedKey  = KVStore.getItem(SPORTS_BRIEFING_DATE_KEY);
+  const sCachedText = KVStore.getItem(SPORTS_BRIEFING_KEY);
+  const sCurrentKey = getSportsBriefingCacheKey();
+  if(!(sCachedKey === sCurrentKey && sCachedText)) {
+    loadSportsBriefing();
   }
 }
 
