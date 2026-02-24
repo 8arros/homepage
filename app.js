@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.6';
+const APP_VERSION = '5.6.1';
 
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
@@ -1049,6 +1049,26 @@ function getCaldavCalUrl(calName) {
 // Edit event state
 let editingEvent = null;
 
+// Format RRULE into human-readable short description
+function formatRruleShort(rrule) {
+  if (!rrule) return '';
+  const parts = {};
+  rrule.split(';').forEach(p => { const [k,v] = p.split('='); parts[k] = v; });
+  const freq = parts['FREQ'] || '';
+  const interval = parts['INTERVAL'] ? +parts['INTERVAL'] : 1;
+  const dayMap = { MO:'Mon', TU:'Tue', WE:'Wed', TH:'Thu', FR:'Fri', SA:'Sat', SU:'Sun' };
+  let desc = '';
+  if (freq === 'DAILY')   desc = interval === 1 ? 'Every day' : `Every ${interval} days`;
+  if (freq === 'WEEKLY')  desc = interval === 1 ? 'Every week' : `Every ${interval} weeks`;
+  if (freq === 'MONTHLY') desc = interval === 1 ? 'Every month' : `Every ${interval} months`;
+  if (freq === 'YEARLY')  desc = interval === 1 ? 'Every year' : `Every ${interval} years`;
+  if (parts['BYDAY']) {
+    const days = parts['BYDAY'].split(',').map(d => dayMap[d.replace(/^[-+\d]+/,'')] || d).join(', ');
+    desc += ` (${days})`;
+  }
+  return desc || 'Recurring';
+}
+
 async function openEditEvent(uid) {
   // Find the raw event in icsRawCache
   const raw = icsRawCache.find(e => e.uid === uid);
@@ -1122,24 +1142,47 @@ async function openEditEvent(uid) {
   aeState.calMonth = { start: s.getMonth(), end: s.getMonth() };
   aeState.calYear  = { start: s.getFullYear(), end: s.getFullYear() };
 
-  // Start date display
-  if (aeState.startDate) {
-    const sd = new Date(aeState.startDate + 'T12:00:00');
-    document.getElementById('aeStartDateLabel').textContent = `${sd.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][sd.getMonth()]} ${sd.getFullYear()}`;
+  const isRecurring = !!raw.rrule;
+
+  // Date pickers — disabled for recurring events
+  const startDateEl = document.getElementById('aeStartDateDisplay');
+  const endDateEl   = document.getElementById('aeEndDateDisplay');
+  if (isRecurring) {
+    // Show recurrence description instead of editable dates
+    const rruleDesc = formatRruleShort(raw.rrule);
+    document.getElementById('aeStartDateLabel').textContent = rruleDesc;
     document.getElementById('aeStartDateLabel').classList.remove('at-dp-placeholder');
-  } else {
-    document.getElementById('aeStartDateLabel').textContent = 'No date';
-    document.getElementById('aeStartDateLabel').classList.add('at-dp-placeholder');
-  }
-  // End date display
-  if (aeState.endDate) {
-    const ed = new Date(aeState.endDate + 'T12:00:00');
-    document.getElementById('aeEndDateLabel').textContent = `${ed.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][ed.getMonth()]} ${ed.getFullYear()}`;
-    document.getElementById('aeEndDateLabel').classList.remove('at-dp-placeholder');
-  } else {
-    document.getElementById('aeEndDateLabel').textContent = 'No date';
+    document.getElementById('aeEndDateLabel').textContent = '—';
     document.getElementById('aeEndDateLabel').classList.add('at-dp-placeholder');
+    startDateEl.style.pointerEvents = 'none';
+    startDateEl.style.opacity = '.5';
+    endDateEl.style.pointerEvents = 'none';
+    endDateEl.style.opacity = '.5';
+  } else {
+    startDateEl.style.pointerEvents = '';
+    startDateEl.style.opacity = '';
+    endDateEl.style.pointerEvents = '';
+    endDateEl.style.opacity = '';
+    // Start date display
+    if (aeState.startDate) {
+      const sd = new Date(aeState.startDate + 'T12:00:00');
+      document.getElementById('aeStartDateLabel').textContent = `${sd.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][sd.getMonth()]} ${sd.getFullYear()}`;
+      document.getElementById('aeStartDateLabel').classList.remove('at-dp-placeholder');
+    } else {
+      document.getElementById('aeStartDateLabel').textContent = 'No date';
+      document.getElementById('aeStartDateLabel').classList.add('at-dp-placeholder');
+    }
+    // End date display
+    if (aeState.endDate) {
+      const ed = new Date(aeState.endDate + 'T12:00:00');
+      document.getElementById('aeEndDateLabel').textContent = `${ed.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][ed.getMonth()]} ${ed.getFullYear()}`;
+      document.getElementById('aeEndDateLabel').classList.remove('at-dp-placeholder');
+    } else {
+      document.getElementById('aeEndDateLabel').textContent = 'No date';
+      document.getElementById('aeEndDateLabel').classList.add('at-dp-placeholder');
+    }
   }
+  // Time displays (editable for both recurring and non-recurring)
   // Start time display
   if (aeState.startH !== null && aeState.startM !== null) {
     document.getElementById('aeStartTimeLabel').textContent = `${String(aeState.startH).padStart(2,'0')}:${String(aeState.startM).padStart(2,'0')}`;
@@ -3254,6 +3297,11 @@ function openAddEvent() {
   document.getElementById('aeDeleteBtn').style.display = 'none';
   document.getElementById('aeDeleteBtn').disabled = false;
   document.getElementById('aeModalTitle').textContent = 'New Event';
+  // Re-enable date pickers (may have been disabled for recurring event edit)
+  ['aeStartDateDisplay','aeEndDateDisplay'].forEach(id => {
+    document.getElementById(id).style.pointerEvents = '';
+    document.getElementById(id).style.opacity = '';
+  });
   document.getElementById('aeCalLabel').textContent = 'Select calendar…';
   document.getElementById('aeCalLabel').classList.add('at-dp-placeholder');
   if (!aeCalendars.length) aeFetchCalendars();
