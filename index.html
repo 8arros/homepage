@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<!-- v5.5.5 — Auth + GitHub Pages + api.barros.work -->
+<!-- v5.6 — Auth + GitHub Pages + api.barros.work -->
 <title>Home</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a5c3e' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z'/%3E%3Cpath d='M9 21V12h6v9'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -311,7 +311,10 @@
   .mini-cal td.has-event { position: relative; padding-bottom: .55rem; }
   .mini-cal-dots { display:flex; gap:2px; justify-content:center; position:absolute; bottom:2px; left:0; right:0; }
   .mini-cal-dot { width:3px; height:3px; border-radius:50%; flex-shrink:0; }
-  .mini-cal td.today.has-event .mini-cal-dot { opacity:.85; }
+  .mini-cal td.selected { background: var(--accent); color: #fdf6e8 !important; position: relative; }
+  .mini-cal td.selected .mini-cal-dot { opacity:.85; }
+  .mini-cal td:not(.other-month) { cursor: pointer; }
+  .mini-cal td:not(.other-month):hover { background: var(--bg-input); }
   /* events */
   .cal-event { padding: .45rem 0; display:flex; gap:.6rem; align-items:baseline; }
   .cal-event-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink:0; position:relative; top:.3rem; }
@@ -682,7 +685,7 @@
     </div>
 
     <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-      <span style="font-family:'Josefin Sans',sans-serif;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-lt)">html 5.5.5</span>
+      <span style="font-family:'Josefin Sans',sans-serif;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-lt)">html 5.6</span>
       <span id="jsVersion" style="font-family:'Josefin Sans',sans-serif;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-lt)"></span>
       <button class="btn btn-cancel" onclick="closeModal('backupModal')">Close</button>
     </div>

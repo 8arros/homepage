@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.5.5';
+const APP_VERSION = '5.6';
 
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
@@ -752,6 +752,7 @@ document.getElementById('backupModal').addEventListener('click', e => {
 const DAYS_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const MONTHS_LONG = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 let calYear, calMonth;
+let calSelectedDay = null; // day number when filtering by day, null = show all
 
 // ── TODOIST CONSTANTS (declared early so calInit can use them) ──
 const TODOIST_TOKEN_KEY  = 'todoist_api_token';
@@ -770,9 +771,19 @@ function calInit() {
   loadTodoist();
 }
 
-function calPrevMonth() { calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderMiniCal(); renderEvents(); }
-function calNextMonth() { calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderMiniCal(); renderEvents(); }
-function calGoToday()  { const n=new Date(); calYear=n.getFullYear(); calMonth=n.getMonth(); renderMiniCal(); renderEvents(); }
+function calPrevMonth() { calMonth--; if(calMonth<0){calMonth=11;calYear--;} calSelectedDay=null; renderMiniCal(); renderEvents(); }
+function calNextMonth() { calMonth++; if(calMonth>11){calMonth=0;calYear++;} calSelectedDay=null; renderMiniCal(); renderEvents(); }
+function calGoToday()  { const n=new Date(); calYear=n.getFullYear(); calMonth=n.getMonth(); calSelectedDay=null; renderMiniCal(); renderEvents(); }
+
+function calClickDay(d) {
+  if (calSelectedDay === d) {
+    calSelectedDay = null; // toggle off — back to month view
+  } else {
+    calSelectedDay = d;
+  }
+  renderMiniCal();
+  renderEvents();
+}
 
 function renderMiniCal() {
   document.getElementById('calMonthLabel').textContent = MONTHS_LONG[calMonth] + ' ' + calYear;
@@ -815,11 +826,12 @@ function renderMiniCal() {
     if(isWeekend) cls.push('weekend');
     if(isToday)   cls.push('today');
     if(colors)    cls.push('has-event');
+    if(calSelectedDay === d) cls.push('selected');
     const dotsHtml = colors
       ? `<div class="mini-cal-dots">${[...colors].map(c=>`<span class="mini-cal-dot" style="background:${c}"></span>`).join('')}</div>`
       : '';
     const label = isToday ? `<span>${d}</span>` : d;
-    html += `<td class="${cls.join(' ')}">${label}${dotsHtml}</td>`;
+    html += `<td class="${cls.join(' ')}" onclick="calClickDay(${d})">${label}${dotsHtml}</td>`;
     cell++;
   }
   let next = 1;
@@ -1041,7 +1053,6 @@ async function openEditEvent(uid) {
   // Find the raw event in icsRawCache
   const raw = icsRawCache.find(e => e.uid === uid);
   if (!raw) return;
-  if (raw.rrule) return; // recurring events not editable
 
   const { user } = getCaldavCreds();
   if (!user) { openCaldavSettings(); return; }
@@ -1049,14 +1060,14 @@ async function openEditEvent(uid) {
   editingEvent = { ...raw };
 
   // Reuse the Add Event modal
-  document.getElementById('aeModalTitle').textContent = 'Edit Event';
+  document.getElementById('aeModalTitle').textContent = raw.rrule ? 'Edit Recurring Event' : 'Edit Event';
   document.getElementById('aeSubmitBtn').textContent = 'Save';
   document.getElementById('aeSubmitBtn').disabled = false;
   document.getElementById('aeSubmitBtn').onclick = saveEditEvent;
   document.getElementById('aeDeleteBtn').style.display = '';
   document.getElementById('aeDeleteBtn').disabled = false;
-  document.getElementById('aeStatus').textContent = '';
-  document.getElementById('aeStatus').style.color = '';
+  document.getElementById('aeStatus').textContent = raw.rrule ? 'Changes will apply to all occurrences.' : '';
+  document.getElementById('aeStatus').style.color = raw.rrule ? 'var(--text-lt)' : '';
 
   // Fill in title and location
   document.getElementById('aeTitle').value = raw.title || '';
@@ -1191,6 +1202,11 @@ async function saveEditEvent() {
     `SUMMARY:${title.replace(/\n/g,'\\n')}`,
   ];
   if (location) ics.push(`LOCATION:${location.replace(/\n/g,'\\n')}`);
+  if (editingEvent.rrule) ics.push(`RRULE:${editingEvent.rrule}`);
+  if (editingEvent.exdates && editingEvent.exdates.length) {
+    const fmtEx = d => `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+    ics.push(`EXDATE;VALUE=DATE:${editingEvent.exdates.map(fmtEx).join(',')}`);
+  }
   ics.push('END:VEVENT', 'END:VCALENDAR');
   const icsText = ics.join('\r\n');
 
@@ -1259,12 +1275,24 @@ function renderEvents() {
 
   const now = new Date(); now.setHours(0,0,0,0);
   const isCurrentMonth = (calYear===now.getFullYear() && calMonth===now.getMonth());
-  const windowStart = isCurrentMonth ? now : new Date(calYear,calMonth,1);
-  const windowEnd   = new Date(calYear,calMonth+1,0,23,59,59);
+
+  let windowStart, windowEnd;
+  if (calSelectedDay) {
+    // Filtering by specific day
+    windowStart = new Date(calYear, calMonth, calSelectedDay);
+    windowEnd   = new Date(calYear, calMonth, calSelectedDay, 23, 59, 59);
+  } else {
+    windowStart = isCurrentMonth ? now : new Date(calYear,calMonth,1);
+    windowEnd   = new Date(calYear,calMonth+1,0,23,59,59);
+  }
 
   const events=getEventsInWindow(windowStart,windowEnd);
   if(!events.length){
-    el.innerHTML='<div class="cal-empty">'+(isCurrentMonth?'No upcoming events this month':'No events this month')+'</div>';
+    if (calSelectedDay) {
+      el.innerHTML='<div class="cal-empty">No events on this day</div>';
+    } else {
+      el.innerHTML='<div class="cal-empty">'+(isCurrentMonth?'No upcoming events this month':'No events this month')+'</div>';
+    }
     return;
   }
   const DAY=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -1297,8 +1325,8 @@ function renderEvents() {
     }
     const timeStr=ev.allDay?'all day':`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
     const locHtml=ev.location?`<div class="cal-event-loc">${ev.location}</div>`:'';
-    // Editable: has UID, no RRULE, and belongs to a CalDAV calendar (not ICS-only feed)
-    const isEditable = ev.uid && !ev.rrule && isCaldavEvent(ev.calName);
+    // Editable: has UID and belongs to a CalDAV calendar
+    const isEditable = ev.uid && isCaldavEvent(ev.calName);
     const clickAttr = isEditable ? ` onclick="openEditEvent('${ev.uid.replace(/'/g,"\\'")}')" style="cursor:pointer"` : '';
     html+=`<div class="cal-event"${clickAttr}>
       <div class="cal-event-dot" style="background:${ev.calColor}"></div>
