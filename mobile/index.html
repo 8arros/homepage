@@ -25,27 +25,40 @@
     --text-lt:   #9a7960;
     --accent:    #7c4e2a;
     --accent-lt: #a3683e;
+    --err:       #a04030;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
     font-family: 'Cormorant Garamond', Georgia, serif;
-    background: linear-gradient(to bottom, var(--bg-top), var(--bg-bot));
+    background: linear-gradient(180deg, var(--bg-top) 0%, #fdf6e8 15%, #f5e8c8 40%, #edd8a8 70%, var(--bg-bot) 100%);
+    background-attachment: fixed;
     min-height: 100dvh;
     color: var(--text);
     -webkit-font-smoothing: antialiased;
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23n)' opacity='0.30'/%3E%3C/svg%3E");
+    background-repeat: repeat; background-size: 150px 150px; mix-blend-mode: multiply;
+  }
+  body::after {
+    content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(20,8,0,0.45) 100%);
   }
 
   /* ── Login ── */
   #loginScreen {
     display: flex; align-items: center; justify-content: center;
-    min-height: 100dvh; padding: 2rem;
+    min-height: 100dvh; padding: 2rem; position: relative; z-index: 1;
   }
   .login-box {
     background: var(--bg-card); border: 1px solid var(--border-lt);
     border-radius: 4px; padding: 2rem; width: 100%; max-width: 320px;
-    text-align: center;
+    text-align: center; box-shadow: 0 2px 12px rgba(61,43,31,.1);
   }
   .login-box h2 {
     font-family: 'Cormorant Garamond', serif; font-size: 1.8rem;
@@ -69,84 +82,100 @@
   #loginError { color: var(--text-lt); font-size: .82rem; margin-top: .5rem; min-height: 1.2rem; }
 
   /* ── App ── */
-  #app { display: none; }
+  #app { display: none; position: relative; z-index: 1; }
 
   .header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 1rem 1.2rem .6rem;
+    padding: 1.2rem 1.4rem .6rem;
   }
   .logo {
-    font-family: 'Cormorant Garamond', serif; font-size: 1.5rem;
+    font-family: 'Cormorant Garamond', serif; font-size: 1.6rem;
     font-weight: 300; letter-spacing: .08em; color: var(--accent);
   }
   .date-str {
-    font-family: 'Raleway', sans-serif; font-size: .6rem; font-weight: 300;
+    font-family: 'Raleway', sans-serif; font-size: .62rem; font-weight: 300;
     letter-spacing: .18em; text-transform: uppercase; color: var(--text-mid);
   }
 
   /* ── Tabs ── */
   .tabs {
-    display: flex; gap: 0; padding: 0 1.2rem;
-    border-bottom: 1px solid var(--border-lt); margin-bottom: 0;
+    display: flex; gap: 0; padding: 0 1.4rem;
+    border-bottom: 1px solid var(--border-lt);
   }
   .tab-btn {
-    flex: 1; display: flex; align-items: center; justify-content: center; gap: .4rem;
-    padding: .6rem .5rem; background: none; border: none;
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: .7rem .5rem; background: none; border: none;
     border-bottom: 2px solid transparent;
-    font-family: 'Raleway', sans-serif; font-size: .58rem;
-    letter-spacing: .18em; text-transform: uppercase; color: var(--text-lt);
-    cursor: pointer; transition: color .18s, border-color .18s;
+    color: var(--text-lt); cursor: pointer; transition: color .18s, border-color .18s;
   }
   .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .tab-btn svg { width: .9rem; height: .9rem; }
+  .tab-btn svg { width: 1.15rem; height: 1.15rem; display: block; }
 
   /* ── Content ── */
-  .content { padding: 1rem 1.2rem 2rem; }
-
+  .content { padding: 1.2rem 1.4rem 3rem; }
   .panel { display: none; }
   .panel.active { display: block; }
 
   .briefing-body {
-    font-family: 'Cormorant Garamond', serif; font-size: 1rem;
-    line-height: 1.6; color: var(--text);
+    font-family: 'Cormorant Garamond', serif; font-size: 1.15rem;
+    line-height: 1.65; color: var(--text);
   }
-  .briefing-body p { margin-bottom: .9rem; }
-
+  .briefing-body p { margin-bottom: 1rem; }
   .briefing-empty {
     font-family: 'Cormorant Garamond', serif; font-style: italic;
-    color: var(--text-lt); font-size: .95rem; text-align: center; padding: 2rem 0;
+    color: var(--text-lt); font-size: 1.05rem; text-align: center; padding: 2rem 0;
   }
-
-  .refresh-row {
-    display: flex; justify-content: flex-end; margin-bottom: .8rem;
-  }
+  .refresh-row { display: flex; justify-content: flex-end; margin-bottom: .8rem; }
   .refresh-btn {
     background: none; border: none; cursor: pointer; color: var(--text-lt);
-    font-family: 'Raleway', sans-serif; font-size: .55rem;
+    font-family: 'Raleway', sans-serif; font-size: .58rem;
     letter-spacing: .15em; text-transform: uppercase;
-    display: flex; align-items: center; gap: .3rem;
-    transition: color .18s;
+    display: flex; align-items: center; gap: .3rem; transition: color .18s;
   }
   .refresh-btn:hover { color: var(--accent); }
   .refresh-btn svg { width: .85rem; height: .85rem; }
 
+  /* ── Weather ── */
+  .wx-current { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem; }
+  .wx-temp { font-family: 'Raleway', sans-serif; font-size: 3rem; font-weight: 200; line-height: 1; color: var(--accent); }
+  .wx-temp sup { font-size: 1.1rem; vertical-align: super; color: var(--accent-lt); }
+  .wx-info { flex: 1; }
+  .wx-condition { font-family: 'Raleway', sans-serif; font-size: .85rem; color: var(--text-mid); margin-bottom: .2rem; }
+  .wx-hilo { font-family: 'Raleway', sans-serif; font-size: .75rem; color: var(--text-lt); }
+  .wx-details {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem;
+    margin-bottom: 1.4rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-lt);
+  }
+  .wx-detail-lbl { font-family: 'Raleway', sans-serif; font-size: .5rem; letter-spacing: .18em; text-transform: uppercase; color: var(--text-lt); margin-bottom: .15rem; }
+  .wx-detail-val { font-family: 'Raleway', sans-serif; font-size: .85rem; font-weight: 500; color: var(--text); }
+  .wx-detail-unit { font-family: 'Raleway', sans-serif; font-size: .5rem; color: var(--text-lt); margin-left: .1rem; }
+  .wx-forecast-title {
+    font-family: 'Raleway', sans-serif; font-size: .6rem; font-weight: 300;
+    letter-spacing: .22em; text-transform: uppercase; color: var(--text-lt);
+    padding-bottom: .35rem; margin-bottom: .6rem; border-bottom: 1px solid var(--border-lt);
+  }
+  .wx-fc-row { display: flex; align-items: center; gap: .6rem; padding: .4rem 0; }
+  .wx-fc-day { font-family: 'Raleway', sans-serif; font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-lt); width: 2.8rem; }
+  .wx-fc-icon { width: 1.4rem; height: 1.4rem; }
+  .wx-fc-temps { font-family: 'Raleway', sans-serif; font-size: .85rem; flex: 1; text-align: right; }
+  .wx-fc-hi { font-weight: 500; color: var(--text); }
+  .wx-fc-lo { color: var(--text-lt); margin-left: .4rem; }
+  .wx-fc-precip { font-family: 'Raleway', sans-serif; font-size: .55rem; color: var(--text-lt); width: 3rem; text-align: right; }
+
   /* ── Notes ── */
   .notes-area {
-    width: 100%; min-height: 50dvh; resize: none;
+    width: 100%; min-height: 65dvh; resize: none;
     background: var(--bg-input); border: 1px solid var(--border-lt);
-    border-radius: 2px; padding: .8rem; outline: none;
-    font-family: 'Cormorant Garamond', serif; font-size: .95rem;
+    border-radius: 2px; padding: 1rem; outline: none;
+    font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;
     line-height: 1.7; color: var(--text);
   }
   .notes-area:focus { border-color: var(--accent); }
-  .notes-actions {
-    display: flex; justify-content: flex-end; margin-top: .5rem;
-  }
+  .notes-actions { display: flex; justify-content: flex-end; margin-top: .5rem; }
   .clear-btn {
     background: none; border: none; cursor: pointer;
-    font-family: 'Raleway', sans-serif; font-size: .55rem;
-    letter-spacing: .15em; text-transform: uppercase; color: var(--text-lt);
-    transition: color .18s;
+    font-family: 'Raleway', sans-serif; font-size: .58rem;
+    letter-spacing: .15em; text-transform: uppercase; color: var(--text-lt); transition: color .18s;
   }
   .clear-btn:hover { color: var(--accent); }
 </style>
@@ -157,23 +186,19 @@
 <div id="loginScreen">
   <div class="login-box">
     <h2>Home</h2>
-    <!-- Token setup (shown first if no kv_token) -->
     <div id="tokenSetup" style="display:none">
-      <p style="font-family:'Cormorant Garamond',serif;font-size:.88rem;color:var(--text-lt);line-height:1.5;margin-bottom:.8rem">
+      <p style="font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--text-lt);line-height:1.5;margin-bottom:.8rem">
         Paste your sync token from the desktop Settings to access your data.
       </p>
-      <input type="text" id="tokenInput" placeholder="Paste sync token here"
+      <input type="text" id="tokenInput" placeholder="Paste sync token or URL here"
         autocomplete="off" style="font-size:.85rem;letter-spacing:.02em">
       <button onclick="applyToken()">Connect</button>
       <div id="tokenError" style="color:var(--text-lt);font-size:.82rem;margin-top:.5rem;min-height:1.2rem"></div>
       <div style="margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--border-lt)">
-        <p style="font-family:'Cormorant Garamond',serif;font-size:.82rem;color:var(--text-lt);line-height:1.4">
-          Or continue without syncing (fresh start).
-        </p>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:.85rem;color:var(--text-lt);line-height:1.4">Or continue without syncing.</p>
         <button onclick="skipToken()" style="background:var(--bg-input);color:var(--text-mid);margin-top:.4rem">Skip</button>
       </div>
     </div>
-    <!-- Login form -->
     <div id="loginForm">
       <input type="text" id="loginUser" placeholder="Username" autocomplete="username"
         onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
@@ -193,506 +218,244 @@
   </div>
 
   <div class="tabs">
-    <button class="tab-btn active" id="tabDaily" onclick="switchTab('daily')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Daily
+    <button class="tab-btn active" id="tabDaily" onclick="switchTab('daily')" title="Daily Briefing">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
     </button>
-    <button class="tab-btn" id="tabSports" onclick="switchTab('sports')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 9l6 6 6-6"/><path d="M2 17h20"/><path d="M4 17V7a2 2 0 012-2h12a2 2 0 012 2v10"/></svg>
-      Sports
+    <button class="tab-btn" id="tabSports" onclick="switchTab('sports')" title="Sports Briefing">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6m12 5h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16m-10-7.34V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22m7-7.34V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0z"/></svg>
     </button>
-    <button class="tab-btn" id="tabNotes" onclick="switchTab('notes')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
-      Notes
+    <button class="tab-btn" id="tabWeather" onclick="switchTab('weather')" title="Weather">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    </button>
+    <button class="tab-btn" id="tabNotes" onclick="switchTab('notes')" title="Quick Notes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
     </button>
   </div>
 
-  <!-- Daily Briefing -->
   <div class="content">
     <div class="panel active" id="panelDaily">
-      <div class="refresh-row">
-        <button class="refresh-btn" id="refreshDaily" onclick="refreshBriefing('daily')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
-          Refresh
-        </button>
-      </div>
-      <div class="briefing-body" id="dailyBody">
-        <div class="briefing-empty">Loading briefing…</div>
-      </div>
+      <div class="refresh-row"><button class="refresh-btn" id="refreshDaily" onclick="refreshBriefing('daily')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>Refresh</button></div>
+      <div class="briefing-body" id="dailyBody"><div class="briefing-empty">Loading briefing…</div></div>
     </div>
-
-    <!-- Sports Briefing -->
     <div class="panel" id="panelSports">
-      <div class="refresh-row">
-        <button class="refresh-btn" id="refreshSports" onclick="refreshBriefing('sports')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
-          Refresh
-        </button>
-      </div>
-      <div class="briefing-body" id="sportsBody">
-        <div class="briefing-empty">Loading sports briefing…</div>
-      </div>
+      <div class="refresh-row"><button class="refresh-btn" id="refreshSports" onclick="refreshBriefing('sports')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>Refresh</button></div>
+      <div class="briefing-body" id="sportsBody"><div class="briefing-empty">Loading sports briefing…</div></div>
     </div>
-
-    <!-- Notes -->
+    <div class="panel" id="panelWeather">
+      <div class="refresh-row"><button class="refresh-btn" id="refreshWeather" onclick="loadWeather()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>Refresh</button></div>
+      <div id="weatherContent"><div class="briefing-empty">Loading weather…</div></div>
+    </div>
     <div class="panel" id="panelNotes">
-      <textarea class="notes-area" id="notesArea" placeholder="Write your notes here…"
-        oninput="saveNotes()"></textarea>
-      <div class="notes-actions">
-        <button class="clear-btn" id="clearBtn" style="display:none" onclick="clearNotes()">✕ Clear</button>
-      </div>
+      <textarea class="notes-area" id="notesArea" placeholder="Write your notes here…" oninput="saveNotes()"></textarea>
+      <div class="notes-actions"><button class="clear-btn" id="clearBtn" style="display:none" onclick="clearNotes()">✕ Clear</button></div>
     </div>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════
-// ── CONFIG ──
-// ═══════════════════════════════════════════════
 const API_BASE = 'https://api.barros.work';
+const WX_CDN = 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons@2.0.0/production/fill/svg/';
 
 // ── Auth ──
-function getAuthToken() {
-  const m = document.cookie.match(/(?:^|;\s*)auth_token=([^;]+)/);
-  return m ? m[1] : null;
-}
-function setAuthToken(token, maxAge) {
-  document.cookie = `auth_token=${token};path=/;max-age=${maxAge};SameSite=Strict;Secure`;
-}
+function getAuthToken() { const m = document.cookie.match(/(?:^|;\s*)auth_token=([^;]+)/); return m ? m[1] : null; }
+function setAuthToken(t, ma) { document.cookie = `auth_token=${t};path=/;max-age=${ma};SameSite=Strict;Secure`; }
 function authFetch(url, opts = {}) {
-  const token = getAuthToken();
-  if (token) {
-    opts.headers = opts.headers || {};
-    opts.headers['Authorization'] = `Bearer ${token}`;
-  }
+  const t = getAuthToken();
+  if (t) { opts.headers = opts.headers || {}; opts.headers['Authorization'] = `Bearer ${t}`; }
   return fetch(url, opts);
 }
-
 async function doLogin() {
-  const user = document.getElementById('loginUser').value.trim();
-  const pass = document.getElementById('loginPass').value;
-  const err  = document.getElementById('loginError');
+  const user = document.getElementById('loginUser').value.trim(), pass = document.getElementById('loginPass').value, err = document.getElementById('loginError');
   err.textContent = '';
   if (!user || !pass) { err.textContent = 'Please enter credentials.'; return; }
   try {
-    const res = await fetch(`${API_BASE}/auth`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user, pass }),
-    });
+    const res = await fetch(`${API_BASE}/auth`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({user,pass}) });
     const data = await res.json();
     if (!res.ok || !data.token) { err.textContent = 'Invalid credentials.'; return; }
-    setAuthToken(data.token, data.expires_in || 2592000);
-    startApp();
+    setAuthToken(data.token, data.expires_in || 2592000); startApp();
   } catch { err.textContent = 'Connection error.'; }
 }
-
 function showLogin() {
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
-  // Check if kv_token exists — if not, show token setup first
-  const hasKvToken = document.cookie.match(/(?:^|;\s*)kv_token=([^;]+)/);
-  if (!hasKvToken) {
-    document.getElementById('tokenSetup').style.display = '';
-    document.getElementById('loginForm').style.display = 'none';
-  } else {
-    document.getElementById('tokenSetup').style.display = 'none';
-    document.getElementById('loginForm').style.display = '';
-  }
+  const has = document.cookie.match(/(?:^|;\s*)kv_token=([^;]+)/);
+  document.getElementById('tokenSetup').style.display = has ? 'none' : '';
+  document.getElementById('loginForm').style.display = has ? '' : 'none';
 }
-
 function applyToken() {
-  const input = document.getElementById('tokenInput').value.trim();
-  const err = document.getElementById('tokenError');
-  err.textContent = '';
-  // Accept either a raw token or a full URL with ?token=
-  let token = input;
-  try {
-    const url = new URL(input);
-    const t = url.searchParams.get('token');
-    if (t) token = t;
-  } catch {}
-  if (!token || token.length < 16) {
-    err.textContent = 'Invalid token. Paste the full URL or token from Settings.';
-    return;
-  }
+  const input = document.getElementById('tokenInput').value.trim(), err = document.getElementById('tokenError');
+  err.textContent = ''; let token = input;
+  try { const u = new URL(input); const t = u.searchParams.get('token'); if (t) token = t; } catch {}
+  if (!token || token.length < 16) { err.textContent = 'Invalid token.'; return; }
   document.cookie = `kv_token=${token};path=/;max-age=31536000;SameSite=Strict`;
-  // Show login form
   document.getElementById('tokenSetup').style.display = 'none';
   document.getElementById('loginForm').style.display = '';
   document.getElementById('loginUser').focus();
 }
-
 function skipToken() {
   document.getElementById('tokenSetup').style.display = 'none';
   document.getElementById('loginForm').style.display = '';
   document.getElementById('loginUser').focus();
 }
-
 async function checkAuth() {
-  // Handle ?token= in URL first
   getKvToken();
-  const token = getAuthToken();
-  if (!token) { showLogin(); return; }
+  const t = getAuthToken();
+  if (!t) { showLogin(); return; }
   try {
-    const res = await fetch(`${API_BASE}/auth/verify`, {
-      headers: { 'Authorization': `Bearer ${token}` },
-    });
-    const data = await res.json();
-    if (data.valid) startApp();
-    else { document.cookie = 'auth_token=;path=/;max-age=0'; showLogin(); }
+    const res = await fetch(`${API_BASE}/auth/verify`, { headers:{'Authorization':`Bearer ${t}`} });
+    const d = await res.json();
+    if (d.valid) startApp(); else { document.cookie='auth_token=;path=/;max-age=0'; showLogin(); }
   } catch { startApp(); }
 }
 
-// ═══════════════════════════════════════════════
-// ── KVStore (minimal — read from remote) ──
-// ═══════════════════════════════════════════════
+// ── KV ──
 const kvCache = new Map();
 function getKvToken() {
-  // Check URL param first (for syncing from desktop)
-  const urlToken = new URLSearchParams(location.search).get('token');
-  if (urlToken && urlToken.length >= 16) {
-    document.cookie = `kv_token=${urlToken};path=/;max-age=31536000;SameSite=Strict`;
-    // Clean URL
-    const u = new URL(location.href);
-    u.searchParams.delete('token');
-    history.replaceState(null, '', u.toString());
-    return urlToken;
+  const urlT = new URLSearchParams(location.search).get('token');
+  if (urlT && urlT.length >= 16) {
+    document.cookie = `kv_token=${urlT};path=/;max-age=31536000;SameSite=Strict`;
+    const u = new URL(location.href); u.searchParams.delete('token'); history.replaceState(null,'',u.toString()); return urlT;
   }
-  const m = document.cookie.match(/(?:^|;\s*)kv_token=([^;]+)/);
-  if (m) return m[1];
-  const t = crypto.randomUUID() + crypto.randomUUID().slice(0,8);
-  document.cookie = `kv_token=${t};path=/;max-age=31536000;SameSite=Strict`;
-  return t;
+  const m = document.cookie.match(/(?:^|;\s*)kv_token=([^;]+)/); if (m) return m[1];
+  const t = crypto.randomUUID()+crypto.randomUUID().slice(0,8);
+  document.cookie = `kv_token=${t};path=/;max-age=31536000;SameSite=Strict`; return t;
 }
 async function kvFetch(method, path, body) {
-  const opts = { method, headers: { 'x-settings-token': getKvToken() } };
-  if (body !== undefined) {
-    opts.headers['Content-Type'] = 'application/json';
-    opts.body = JSON.stringify(body);
-  }
-  try {
-    const res = await authFetch(`${API_BASE}${path}`, opts);
-    return await res.json();
-  } catch { return null; }
+  const opts = { method, headers:{'x-settings-token':getKvToken()} };
+  if (body !== undefined) { opts.headers['Content-Type']='application/json'; opts.body=JSON.stringify(body); }
+  try { const r = await authFetch(`${API_BASE}${path}`, opts); return await r.json(); } catch { return null; }
 }
-async function kvLoadAll() {
-  const data = await kvFetch('GET', '/kv/all');
-  if (data?.data) for (const [k,v] of Object.entries(data.data)) kvCache.set(k, v);
-}
-function kvGet(key) { return kvCache.get(key) ?? null; }
-function kvSet(key, value) {
-  kvCache.set(key, String(value));
-  kvFetch('POST', '/kv/set', { entries: { [key]: String(value) } });
-}
-function kvRemove(key) {
-  kvCache.delete(key);
-  kvFetch('DELETE', `/kv/delete/${encodeURIComponent(key)}`);
-}
+async function kvLoadAll() { const d = await kvFetch('GET','/kv/all'); if (d?.data) for (const [k,v] of Object.entries(d.data)) kvCache.set(k,v); }
+function kvGet(k) { return kvCache.get(k) ?? null; }
+function kvSet(k,v) { kvCache.set(k,String(v)); kvFetch('POST','/kv/set',{entries:{[k]:String(v)}}); }
+function kvRemove(k) { kvCache.delete(k); kvFetch('DELETE',`/kv/delete/${encodeURIComponent(k)}`); }
 
-// ═══════════════════════════════════════════════
-// ── BRIEFING ──
-// ═══════════════════════════════════════════════
-function getBriefingPeriod() {
-  const h = new Date().getHours();
-  if (h < 12) return 'morning';
-  if (h < 18) return 'afternoon';
-  return 'evening';
+// ── Briefing ──
+function getBriefingPeriod() { const h=new Date().getHours(); return h<12?'morning':h<18?'afternoon':'evening'; }
+function getBriefingCacheKey() { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}_${getBriefingPeriod()}`; }
+function renderText(el,text) {
+  if (!text) { el.innerHTML='<div class="briefing-empty">No briefing available.</div>'; return; }
+  if (text.startsWith('<')) { el.innerHTML=text; return; }
+  el.innerHTML=text.trim().split(/\n\n+/).map(p=>`<p>${p.trim()}</p>`).join('');
 }
-function getBriefingCacheKey() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}_${getBriefingPeriod()}`;
-}
-function getSportsCacheKey() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}_${getBriefingPeriod()}`;
-}
-
-function renderText(el, text) {
-  if (!text) { el.innerHTML = '<div class="briefing-empty">No briefing available.</div>'; return; }
-  if (text.startsWith('<')) { el.innerHTML = text; return; }
-  el.innerHTML = text.trim().split(/\n\n+/).map(p => `<p>${p.trim()}</p>`).join('');
-}
-
-function loadDailyFromCache() {
-  const key = kvGet('briefing_date');
-  const txt = kvGet('briefing_cache');
-  if (key === getBriefingCacheKey() && txt) {
-    renderText(document.getElementById('dailyBody'), txt);
-    return true;
-  }
-  return false;
-}
-function loadSportsFromCache() {
-  const key = kvGet('sports_briefing_date');
-  const txt = kvGet('sports_briefing_cache');
-  if (key === getSportsCacheKey() && txt) {
-    renderText(document.getElementById('sportsBody'), txt);
-    return true;
-  }
-  return false;
-}
+function loadDailyFromCache() { const k=kvGet('briefing_date'),t=kvGet('briefing_cache'); if(k===getBriefingCacheKey()&&t){renderText(document.getElementById('dailyBody'),t);return true;} return false; }
+function loadSportsFromCache() { const k=kvGet('sports_briefing_date'),t=kvGet('sports_briefing_cache'); if(k===getBriefingCacheKey()&&t){renderText(document.getElementById('sportsBody'),t);return true;} return false; }
 
 async function refreshBriefing(type) {
-  const el  = document.getElementById(type === 'daily' ? 'dailyBody' : 'sportsBody');
-  const btn = document.getElementById(type === 'daily' ? 'refreshDaily' : 'refreshSports');
-  const apiKey = kvGet('claude_api_key');
-  if (!apiKey) { el.innerHTML = '<div class="briefing-empty">Configure Claude API key in the desktop version.</div>'; return; }
-
-  el.innerHTML = '<div class="briefing-empty">Generating…</div>';
-  if (btn) btn.disabled = true;
-
+  const el=document.getElementById(type==='daily'?'dailyBody':'sportsBody');
+  const btn=document.getElementById(type==='daily'?'refreshDaily':'refreshSports');
+  const apiKey=kvGet('claude_api_key');
+  if(!apiKey){el.innerHTML='<div class="briefing-empty">Configure Claude API key in desktop.</div>';return;}
+  el.innerHTML='<div class="briefing-empty">Generating…</div>';
+  if(btn)btn.disabled=true;
   try {
-    // For daily briefing, build a simple prompt from available data
-    const period = getBriefingPeriod();
-    let prompt;
-
-    if (type === 'daily') {
-      // Gather data from KV
-      const todoistToken = kvGet('todoist_api_token');
-      const weatherLoc = kvGet('weather_location');
-      let todoData = '', weatherData = '';
-
-      // Fetch todoist tasks
-      if (todoistToken) {
-        try {
-          const syncParams = new URLSearchParams();
-          syncParams.set('sync_token', '*');
-          syncParams.set('resource_types', '["items","projects"]');
-          const tres = await authFetch(`${API_BASE}/todoist`, {
-            method: 'POST',
-            headers: { 'x-todoist-token': todoistToken, 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: syncParams.toString(),
-          });
-          const tdata = await tres.json();
-          if (tdata.items) {
-            const active = tdata.items.filter(t => !t.checked && !t.is_deleted);
-            const today = new Date().toISOString().slice(0,10);
-            const upcoming = active.filter(t => t.due && t.due.date && t.due.date <= today).slice(0, 10);
-            if (upcoming.length) todoData = 'Tasks due today:\n' + upcoming.map(t => `- ${t.content}`).join('\n');
-          }
-        } catch {}
-      }
-
-      // Fetch weather
-      if (weatherLoc) {
-        try {
-          const loc = JSON.parse(weatherLoc);
-          const wres = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=3`);
-          const wdata = await wres.json();
-          if (wdata.current) {
-            weatherData = `Current weather: ${wdata.current.temperature_2m}°C`;
-            if (wdata.daily) {
-              weatherData += `\nToday: ${wdata.daily.temperature_2m_max[0]}°/${wdata.daily.temperature_2m_min[0]}°, precip ${wdata.daily.precipitation_probability_max[0]}%`;
-            }
-          }
-        } catch {}
-      }
-
-      const greeting = { morning: 'Good morning', afternoon: 'Good afternoon', evening: 'Good evening' }[period];
-      prompt = `You are a sharp personal assistant. Write a concise ${period} briefing.
-
-${weatherData ? 'Weather:\n' + weatherData + '\n\n' : ''}${todoData ? todoData + '\n\n' : ''}
-
-Rules:
-- Start with "${greeting}"
-- 2–3 short paragraphs, plain prose, no bullet points, no headers, no bold, no markdown
-- If there are tasks, mention the most important ones naturally
-- If there's weather data, weave it in naturally
-- Keep it warm and concise`;
+    const period=getBriefingPeriod(); let prompt;
+    if(type==='daily'){
+      let todoData='',weatherData='';
+      const todoistToken=kvGet('todoist_api_token');
+      if(todoistToken){try{
+        const sp=new URLSearchParams();sp.set('sync_token','*');sp.set('resource_types','["items","projects"]');
+        const tr=await authFetch(`${API_BASE}/todoist`,{method:'POST',headers:{'x-todoist-token':todoistToken,'Content-Type':'application/x-www-form-urlencoded'},body:sp.toString()});
+        const td=await tr.json();
+        if(td.items){const a=td.items.filter(t=>!t.checked&&!t.is_deleted),today=new Date().toISOString().slice(0,10),u=a.filter(t=>t.due&&t.due.date&&t.due.date<=today).slice(0,10);if(u.length)todoData='Tasks due today:\n'+u.map(t=>`- ${t.content}`).join('\n');}
+      }catch{}}
+      const locRaw=kvGet('weather_location');
+      if(locRaw){try{
+        const loc=JSON.parse(locRaw);
+        const wr=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=3`);
+        const wd=await wr.json();
+        if(wd.current){weatherData=`Current: ${wd.current.temperature_2m}°C`;if(wd.daily)weatherData+=`\nToday: ${wd.daily.temperature_2m_max[0]}°/${wd.daily.temperature_2m_min[0]}°, precip ${wd.daily.precipitation_probability_max[0]}%`;}
+      }catch{}}
+      const g={morning:'Good morning',afternoon:'Good afternoon',evening:'Good evening'}[period];
+      prompt=`You are a sharp personal assistant. Write a concise ${period} briefing.\n\n${weatherData?'Weather:\n'+weatherData+'\n\n':''}${todoData?todoData+'\n\n':''}Rules:\n- Start with "${g}"\n- 2–3 short paragraphs, plain prose, no bullet points, no headers, no bold, no markdown\n- If tasks, mention naturally\n- If weather, weave in naturally\n- Warm and concise`;
     } else {
-      // Sports — use ICS feeds from KV
-      const sportsRaw = kvGet('sports_calendars');
-      let sportsText = '';
-      if (sportsRaw) {
-        try {
-          const cals = JSON.parse(sportsRaw);
-          const results = await Promise.allSettled(cals.map(async c => {
-            const res = await authFetch(`${API_BASE}/?url=${encodeURIComponent(c.url)}`);
-            return await res.text();
-          }));
-          // Parse ICS and find upcoming events
-          const now = new Date();
-          const week = new Date(now.getTime() + 7 * 86400000);
-          const events = [];
-          for (const r of results) {
-            if (r.status !== 'fulfilled') continue;
-            const text = r.value;
-            const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\n[ \t]/g,'').split('\n');
-            let inEv = false, ev = {};
-            for (const line of lines) {
-              const l = line.trim();
-              if (l === 'BEGIN:VEVENT') { inEv = true; ev = {}; continue; }
-              if (l === 'END:VEVENT') {
-                if (ev.start && ev.title && ev.start >= now && ev.start <= week) events.push(ev);
-                inEv = false; continue;
-              }
-              if (!inEv) continue;
-              const ci = l.indexOf(':');
-              if (ci === -1) continue;
-              const key = l.slice(0,ci).split(';')[0].toUpperCase();
-              const val = l.slice(ci+1);
-              if (key === 'SUMMARY') ev.title = val.replace(/\\,/g,',').replace(/\\n/g,' ').trim();
-              if (key === 'DTSTART') {
-                const clean = val.replace(/[^0-9T]/g,'');
-                const y=+clean.slice(0,4), mo=+clean.slice(4,6)-1, d=+clean.slice(6,8);
-                if (clean.includes('T')) {
-                  const h=+clean.slice(9,11), mi=+clean.slice(11,13);
-                  ev.start = val.endsWith('Z') ? new Date(Date.UTC(y,mo,d,h,mi)) : new Date(y,mo,d,h,mi);
-                } else {
-                  ev.start = new Date(y,mo,d);
-                }
-              }
-            }
-          }
-          events.sort((a,b) => a.start - b.start);
-          if (events.length) {
-            sportsText = events.slice(0, 20).map(e => {
-              const d = e.start;
-              const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-              const time = d.getHours() ? `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}` : 'all day';
-              return `${days[d.getDay()]} ${d.getDate()}/${d.getMonth()+1} ${time} — ${e.title}`;
-            }).join('\n');
-          }
-        } catch {}
-      }
-
-      if (!sportsText) {
-        el.innerHTML = '<div class="briefing-empty">No sports events found.</div>';
-        if (btn) btn.disabled = false;
-        return;
-      }
-
-      const greeting = { morning: 'Good morning', afternoon: 'Good afternoon', evening: 'Good evening' }[period];
-      prompt = `You are a sports-savvy personal assistant. Write a concise sports briefing based on this schedule of upcoming events (times are Lisbon/Portugal time):
-
-${sportsText}
-
-Rules:
-- Start with "${greeting}" and a brief overview of what's coming up
-- 2–4 short paragraphs, plain prose, no bullet points, no headers, no bold, no markdown
-- Group by sport naturally: football first, then F1, then tennis
-- For football: mention the teams, competition, day and kick-off time
-- For F1: mention which GP, what sessions are coming
-- For tennis: mention tournament name and stage
-- Be warm and conversational
-- Write in English always`;
+      const sportsRaw=kvGet('sports_calendars'); let sportsText='';
+      if(sportsRaw){try{
+        const cals=JSON.parse(sportsRaw);
+        const results=await Promise.allSettled(cals.map(async c=>{const r=await authFetch(`${API_BASE}/?url=${encodeURIComponent(c.url)}`);return await r.text();}));
+        const now=new Date(),week=new Date(now.getTime()+7*86400000),events=[];
+        for(const r of results){if(r.status!=='fulfilled')continue;const lines=r.value.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\n[ \t]/g,'').split('\n');let inEv=false,ev={};
+          for(const l of lines){const line=l.trim();if(line==='BEGIN:VEVENT'){inEv=true;ev={};continue;}if(line==='END:VEVENT'){if(ev.start&&ev.title&&ev.start>=now&&ev.start<=week)events.push(ev);inEv=false;continue;}if(!inEv)continue;const ci=line.indexOf(':');if(ci===-1)continue;const key=line.slice(0,ci).split(';')[0].toUpperCase(),val=line.slice(ci+1);
+            if(key==='SUMMARY')ev.title=val.replace(/\\,/g,',').replace(/\\n/g,' ').trim();
+            if(key==='DTSTART'){const clean=val.replace(/[^0-9T]/g,'');const y=+clean.slice(0,4),mo=+clean.slice(4,6)-1,d=+clean.slice(6,8);if(clean.includes('T')){const h=+clean.slice(9,11),mi=+clean.slice(11,13);ev.start=val.endsWith('Z')?new Date(Date.UTC(y,mo,d,h,mi)):new Date(y,mo,d,h,mi);}else ev.start=new Date(y,mo,d);}}}
+        events.sort((a,b)=>a.start-b.start);
+        if(events.length){const dn=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];sportsText=events.slice(0,20).map(e=>{const d=e.start,time=d.getHours()?`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`:'all day';return`${dn[d.getDay()]} ${d.getDate()}/${d.getMonth()+1} ${time} — ${e.title}`;}).join('\n');}
+      }catch{}}
+      if(!sportsText){el.innerHTML='<div class="briefing-empty">No sports events found.</div>';if(btn)btn.disabled=false;return;}
+      const g={morning:'Good morning',afternoon:'Good afternoon',evening:'Good evening'}[period];
+      prompt=`You are a sports-savvy personal assistant. Write a concise sports briefing (times are Lisbon/Portugal time):\n\n${sportsText}\n\nRules:\n- Start with "${g}"\n- 2–4 short paragraphs, plain prose, no bullets/headers/bold/markdown\n- Group: football, F1, tennis\n- Warm and conversational, English always`;
     }
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json(); const text=data?.content?.[0]?.text||'Could not generate briefing.';
+    if(type==='daily'){kvSet('briefing_cache',text);kvSet('briefing_date',getBriefingCacheKey());}
+    else{kvSet('sports_briefing_cache',text);kvSet('sports_briefing_date',getBriefingCacheKey());}
+    renderText(el,text);
+  }catch(e){el.innerHTML=`<div class="briefing-empty" style="color:var(--err)">Error: ${e.message}</div>`;}
+  finally{if(btn)btn.disabled=false;}
+}
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 600,
-        messages: [{ role: 'user', content: prompt }],
-      }),
-    });
-    const data = await res.json();
-    const text = data?.content?.[0]?.text || 'Could not generate briefing.';
+// ── Weather ──
+const WMO_ICONS={0:'clear-day',1:'clear-day',2:'partly-cloudy-day',3:'overcast',45:'fog',48:'fog',51:'drizzle',53:'drizzle',55:'drizzle',61:'rain',63:'rain',65:'rain',71:'snow',73:'snow',75:'snow',77:'snow',80:'rain',81:'rain',82:'rain',85:'snow',86:'snow',95:'thunderstorms',96:'thunderstorms',99:'thunderstorms'};
+const WMO_DESC={0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Rime fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Light snow',73:'Snow',75:'Heavy snow',77:'Snow grains',80:'Light showers',81:'Showers',82:'Heavy showers',85:'Snow showers',86:'Heavy snow showers',95:'Thunderstorm',96:'Thunderstorm + hail',99:'Severe thunderstorm'};
 
-    // Cache
-    if (type === 'daily') {
-      kvSet('briefing_cache', text);
-      kvSet('briefing_date', getBriefingCacheKey());
-    } else {
-      kvSet('sports_briefing_cache', text);
-      kvSet('sports_briefing_date', getSportsCacheKey());
+async function loadWeather() {
+  const el=document.getElementById('weatherContent');
+  const locRaw=kvGet('weather_location');
+  if(!locRaw){el.innerHTML='<div class="briefing-empty">Configure weather location in desktop.</div>';return;}
+  try {
+    const loc=JSON.parse(locRaw);
+    const res=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,relative_humidity_2m,weathercode,wind_speed_10m,uv_index&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weathercode,uv_index_max&timezone=auto&forecast_days=7`);
+    const d=await res.json(); const c=d.current;
+    const icon=WMO_ICONS[c.weathercode]||'clear-day', desc=WMO_DESC[c.weathercode]||'Clear';
+    const dn=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    let html=`<div class="wx-current"><img src="${WX_CDN}${icon}.svg" style="width:3.5rem;height:3.5rem;opacity:.9"><div><div class="wx-temp">${Math.round(c.temperature_2m)}<sup>°</sup></div></div><div class="wx-info"><div class="wx-condition">${desc}</div><div class="wx-hilo">H ${Math.round(d.daily.temperature_2m_max[0])}° · L ${Math.round(d.daily.temperature_2m_min[0])}°</div></div></div>`;
+    html+=`<div class="wx-details"><div><div class="wx-detail-lbl">Humidity</div><div class="wx-detail-val">${c.relative_humidity_2m}<span class="wx-detail-unit">%</span></div></div><div><div class="wx-detail-lbl">Wind</div><div class="wx-detail-val">${Math.round(c.wind_speed_10m)}<span class="wx-detail-unit">km/h</span></div></div><div><div class="wx-detail-lbl">UV Index</div><div class="wx-detail-val">${Math.round(c.uv_index)}</div></div></div>`;
+    html+=`<div class="wx-forecast-title">7-Day Forecast</div>`;
+    for(let i=1;i<d.daily.time.length;i++){
+      const dt=new Date(d.daily.time[i]+'T12:00:00'),fIcon=WMO_ICONS[d.daily.weathercode[i]]||'clear-day',precip=d.daily.precipitation_probability_max[i];
+      html+=`<div class="wx-fc-row"><span class="wx-fc-day">${dn[dt.getDay()]}</span><img class="wx-fc-icon" src="${WX_CDN}${fIcon}.svg"><span class="wx-fc-temps"><span class="wx-fc-hi">${Math.round(d.daily.temperature_2m_max[i])}°</span><span class="wx-fc-lo">${Math.round(d.daily.temperature_2m_min[i])}°</span></span><span class="wx-fc-precip">${precip}%</span></div>`;
     }
-    renderText(el, text);
-  } catch (e) {
-    el.innerHTML = `<div class="briefing-empty" style="color:var(--err)">Error: ${e.message}</div>`;
-  } finally {
-    if (btn) btn.disabled = false;
-  }
+    el.innerHTML=html;
+  }catch{el.innerHTML='<div class="briefing-empty">Could not load weather.</div>';}
 }
 
-// ═══════════════════════════════════════════════
-// ── NOTES ──
-// ═══════════════════════════════════════════════
-function loadNotes() {
-  const ta = document.getElementById('notesArea');
-  const v = kvGet('quick_notes') || '';
-  ta.value = v;
-  document.getElementById('clearBtn').style.display = v ? '' : 'none';
-}
-function saveNotes() {
-  const ta = document.getElementById('notesArea');
-  kvSet('quick_notes', ta.value);
-  document.getElementById('clearBtn').style.display = ta.value ? '' : 'none';
-}
-function clearNotes() {
-  if (!confirm('Clear all notes?')) return;
-  document.getElementById('notesArea').value = '';
-  kvRemove('quick_notes');
-  document.getElementById('clearBtn').style.display = 'none';
+// ── Notes ──
+function loadNotes(){const ta=document.getElementById('notesArea'),v=kvGet('quick_notes')||'';ta.value=v;document.getElementById('clearBtn').style.display=v?'':'none';}
+function saveNotes(){const ta=document.getElementById('notesArea');kvSet('quick_notes',ta.value);document.getElementById('clearBtn').style.display=ta.value?'':'none';}
+function clearNotes(){if(!confirm('Clear all notes?'))return;document.getElementById('notesArea').value='';kvRemove('quick_notes');document.getElementById('clearBtn').style.display='none';}
+
+// ── Tabs ──
+let activeTab='daily';
+function switchTab(tab){
+  activeTab=tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  if(tab==='notes')loadNotes();
+  if(tab==='weather')loadWeather();
 }
 
-// ═══════════════════════════════════════════════
-// ── TABS ──
-// ═══════════════════════════════════════════════
-let activeTab = 'daily';
-function switchTab(tab) {
-  activeTab = tab;
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
-  if (tab === 'notes') loadNotes();
+// ── Date ──
+function updateDate(){
+  const d=new Date(),dn=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('dateStr').textContent=`${dn[d.getDay()]} ${d.getDate()} ${mn[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-// ═══════════════════════════════════════════════
-// ── DATE DISPLAY ──
-// ═══════════════════════════════════════════════
-function updateDate() {
-  const d = new Date();
-  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  document.getElementById('dateStr').textContent =
-    `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-}
-
-// ═══════════════════════════════════════════════
-// ── START APP ──
-// ═══════════════════════════════════════════════
-async function startApp() {
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
+// ── Start ──
+async function startApp(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='block';
   updateDate();
-
-  // Load settings from KV
   await kvLoadAll();
-
-  // Daily briefing: load from cache or generate
-  if (!loadDailyFromCache()) {
-    refreshBriefing('daily');
-  }
-  // Sports briefing: load from cache or generate
-  if (!loadSportsFromCache()) {
-    refreshBriefing('sports');
-  }
-
-  // Auto-refresh: check every 60s if period changed
-  setInterval(() => {
-    const currentKey = getBriefingCacheKey();
-    const cachedKey = kvGet('briefing_date');
-    if (cachedKey !== currentKey) {
-      refreshBriefing('daily');
-    }
-    const sCurrentKey = getSportsCacheKey();
-    const sCachedKey = kvGet('sports_briefing_date');
-    if (sCachedKey !== sCurrentKey) {
-      refreshBriefing('sports');
-    }
-  }, 60000);
+  if(!loadDailyFromCache()) refreshBriefing('daily');
+  if(!loadSportsFromCache()) refreshBriefing('sports');
+  setInterval(()=>{
+    const ck=getBriefingCacheKey();
+    if(kvGet('briefing_date')!==ck) refreshBriefing('daily');
+    if(kvGet('sports_briefing_date')!==ck) refreshBriefing('sports');
+  },60000);
 }
-
-// ── Init ──
 checkAuth();
 </script>
 </body>
