@@ -754,7 +754,7 @@ const TODOIST_FILTER_KEY = 'todoist_filter';
 function getTodoistToken() { return KVStore.getItem(TODOIST_TOKEN_KEY) || ''; }
 let todoistTasks    = [];
 let todoistProjects = {};
-let todoistFilter   = KVStore.getItem(TODOIST_FILTER_KEY) || 'today';
+let todoistFilter   = 'today'; // always start on Today view
 
 function calInit() {
   const now = new Date();
@@ -1407,42 +1407,46 @@ function renderTodoist() {
   if(!todoistTasks.length) { list.innerHTML='<div class="td-empty">No tasks — you\'re all caught up!</div>'; return; }
 
   const today = new Date(); today.setHours(0,0,0,0);
-  const todayStr = today.toISOString().slice(0,10);
+  const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+
+  // Helper to extract date string from a task's due field
+  function taskDueDate(t) {
+    if (!t.due) return '';
+    if (typeof t.due === 'string') return t.due.slice(0,10);
+    return (t.due.date || t.due.datetime || '').slice(0,10);
+  }
 
   let tasks = [...todoistTasks];
 
   if(todoistFilter === 'today') {
     tasks = tasks.filter(t => {
-      if(!t.due) return false;
-      const d = typeof t.due === 'string' ? t.due : (t.due.date || '');
+      const d = taskDueDate(t);
       return d && d <= todayStr;
     });
   } else if(todoistFilter === 'upcoming') {
     // Tomorrow through next Sunday
     const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().slice(0,10);
-    // Find next Sunday
+    const tomorrowStr = tomorrow.getFullYear() + '-' + String(tomorrow.getMonth()+1).padStart(2,'0') + '-' + String(tomorrow.getDate()).padStart(2,'0');
     const nextSun = new Date(today);
-    const dayOfWeek = nextSun.getDay(); // 0=Sun
+    const dayOfWeek = nextSun.getDay();
     const daysUntilSun = dayOfWeek === 0 ? 7 : 7 - dayOfWeek;
     nextSun.setDate(nextSun.getDate() + daysUntilSun);
-    const nextSunStr = nextSun.toISOString().slice(0,10);
+    const nextSunStr = nextSun.getFullYear() + '-' + String(nextSun.getMonth()+1).padStart(2,'0') + '-' + String(nextSun.getDate()).padStart(2,'0');
     tasks = tasks.filter(t => {
-      if(!t.due) return false;
-      const d = typeof t.due === 'string' ? t.due : (t.due.date || '');
+      const d = taskDueDate(t);
       return d && d >= tomorrowStr && d <= nextSunStr;
     });
     tasks.sort((a,b) => {
-      const da = (typeof a.due === 'string' ? a.due : a.due?.date) || '9999';
-      const db = (typeof b.due === 'string' ? b.due : b.due?.date) || '9999';
+      const da = taskDueDate(a) || '9999';
+      const db = taskDueDate(b) || '9999';
       if(da !== db) return da < db ? -1 : 1;
       return b.priority - a.priority;
     });
   } else {
     // all — sort by due date then priority
     tasks.sort((a,b) => {
-      const da = (typeof a.due === 'string' ? a.due : a.due?.date) || '9999';
-      const db = (typeof b.due === 'string' ? b.due : b.due?.date) || '9999';
+      const da = taskDueDate(a) || '9999';
+      const db = taskDueDate(b) || '9999';
       if(da !== db) return da < db ? -1 : 1;
       return b.priority - a.priority;
     });
@@ -1463,9 +1467,7 @@ function renderTodoist() {
 
     let dueHtml = '';
     if(t.due) {
-      // Sync API v1: due can be string, {date:...}, or {date:..., datetime:...}
-      const dueObj = typeof t.due === 'string' ? t.due : (t.due.date || t.due.datetime || '');
-      const dueDate = typeof dueObj === 'string' ? dueObj.slice(0,10) : '';
+      const dueDate = taskDueDate(t);
       if(dueDate) {
         const d = new Date(dueDate + 'T12:00:00');
         if(!isNaN(d.getTime())) {
@@ -1917,17 +1919,21 @@ function buildBriefingPrompt() {
   const tomorrowEvents = eventsForDay(tomorrowStr);
 
   // Todoist tasks
+  const briefingDueDate = (t) => {
+    if (!t.due) return '';
+    if (typeof t.due === 'string') return t.due.slice(0,10);
+    return (t.due.date || t.due.datetime || '').slice(0,10);
+  };
   const getTasksDue = (dateStr) => todoistTasks.filter(t => {
     if(t.checked) return false;
-    const due = t.due ? (typeof t.due === 'string' ? t.due : t.due.date) : null;
-    return due && due.slice(0,10) === dateStr;
+    return briefingDueDate(t) === dateStr;
   }).map(t => t.content);
   const todayTasks    = getTasksDue(todayStr);
   const tomorrowTasks = getTasksDue(tomorrowStr);
   const overdueTasks  = todoistTasks.filter(t => {
     if(t.checked) return false;
-    const due = t.due ? (typeof t.due === 'string' ? t.due : t.due.date) : null;
-    return due && due.slice(0,10) < todayStr;
+    const due = briefingDueDate(t);
+    return due && due < todayStr;
   }).map(t => t.content);
 
   // Upcoming birthdays (next 14 days) — detect by RRULE:YEARLY + title pattern
