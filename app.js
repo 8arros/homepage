@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.4.2';
+const APP_VERSION = '5.4.3';
 
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
@@ -1543,7 +1543,7 @@ function showTaskNotes(taskId, btn) {
   const desc = task?.description?.trim() || '';
   if (!desc && !comments.length) return;
 
-  const esc = s => s.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  const esc = s => s.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>').replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:underline">$1</a>');
   let html = '';
   if (desc) html += `<p style="margin-bottom:.6rem">${esc(desc)}</p>`;
   if (desc && comments.length) html += '<hr style="border:none;border-top:1px solid var(--border-lt);margin:.6rem 0">';
