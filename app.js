@@ -697,7 +697,6 @@ function openBackup() {
   document.getElementById('importNotice').textContent = '';
   document.getElementById('importNotice').className = 'backup-notice';
   document.getElementById('syncTokenDisplay').value = location.origin + '/?token=' + KVStore.getToken();
-  document.getElementById('syncTokenMobile').value = location.origin + '/mobile/?token=' + KVStore.getToken();
   document.getElementById('backupModal').classList.add('open');
 }
 

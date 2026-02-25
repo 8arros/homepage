@@ -670,18 +670,12 @@
     <span class="backup-notice" id="importNotice" style="margin-top:.8rem"></span>
 
     <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border)">
-      <p style="font-family:'Cormorant Garamond', serif;font-size:.88rem;color:var(--text-lt);line-height:1.45;margin-bottom:.6rem">To sync on another device, copy the appropriate link and open it once.</p>
-      <label>Desktop</label>
+      <p style="font-family:'Cormorant Garamond', serif;font-size:.88rem;color:var(--text-lt);line-height:1.45;margin-bottom:.6rem">To sync on another device, copy the link and open it once.</p>
       <input type="text" id="syncTokenDisplay" readonly
-        style="width:100%;font-family:'Raleway', sans-serif;font-size:.6rem;letter-spacing:.04em;color:var(--text-mid);background:var(--bg-input);border:1px solid var(--border-lt);padding:.55rem .8rem;border-radius:2px;cursor:text;box-sizing:border-box;margin-bottom:.4rem"
-        value="">
-      <label>Mobile</label>
-      <input type="text" id="syncTokenMobile" readonly
         style="width:100%;font-family:'Raleway', sans-serif;font-size:.6rem;letter-spacing:.04em;color:var(--text-mid);background:var(--bg-input);border:1px solid var(--border-lt);padding:.55rem .8rem;border-radius:2px;cursor:text;box-sizing:border-box;margin-bottom:.6rem"
         value="">
       <div style="display:flex;justify-content:flex-end;gap:.5rem">
-        <button class="btn btn-cancel" onclick="navigator.clipboard.writeText(document.getElementById('syncTokenDisplay').value).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy Desktop',1200)})">Copy Desktop</button>
-        <button class="btn btn-cancel" onclick="navigator.clipboard.writeText(document.getElementById('syncTokenMobile').value).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy Mobile',1200)})">Copy Mobile</button>
+        <button class="btn btn-cancel" onclick="navigator.clipboard.writeText(document.getElementById('syncTokenDisplay').value).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1200)})">Copy</button>
       </div>
     </div>
 
