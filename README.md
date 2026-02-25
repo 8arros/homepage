@@ -35,29 +35,13 @@ Quick notes scratchpad accessible from the header.
 - **Claude Chat** — embedded assistant for quick questions
 - **Settings Export/Import** — backup and restore all settings with a dated JSON file
 
-## Mobile Version
-
-A dedicated mobile-optimised companion at `/mobile/` provides on-the-go access to the essential features:
-
-- **Weather** — full current conditions (temperature, precipitation, pressure, AQI, UV Index) and 5-day forecast with weather icons, matching the desktop layout
-- **Daily Briefing** — same AI-generated briefing as desktop, with auto-refresh when the time period changes
-- **Sports Briefing** — same AI-generated sports overview, with manual refresh
-- **Quick Notes** — transparent textarea synced with the desktop in real time
-- **Swipe navigation** — swipe left/right to move between tabs
-- **Add to Home Screen** — includes web app manifest and custom app icon (gradient calendar) for standalone mode on iOS and Android
-- **Token-based sync** — first-time setup prompts for sync token from the desktop Settings to share all data; accepts full URL or raw token
-- **Auto-refresh** — checks every 60 seconds if the briefing period has changed and regenerates automatically
-
-All data is shared between desktop and mobile through the same KV store and authentication cookies.
-
 ## Architecture
 
-The application is split into three parts:
+The application is split into two parts:
 
 | Component | Hosted on | Purpose |
 |-----------|-----------|---------|
-| `index.html` + `app.js` | GitHub Pages (`home.barros.work`) | Desktop UI, all client-side logic |
-| `mobile/index.html` | GitHub Pages (`home.barros.work/mobile`) | Mobile UI, self-contained |
+| `index.html` + `app.js` | GitHub Pages (`home.barros.work`) | UI, all client-side logic |
 | `worker.js` | Cloudflare Worker (`api.barros.work`) | Auth, CORS proxy, API relay (Claude, Todoist, CalDAV), KV settings storage |
 
 All user settings (links, feeds, API keys, calendars) are stored in Cloudflare Workers KV, synced automatically across devices via a unique token.
@@ -83,4 +67,4 @@ No code was written by hand.
 
 ## Self-Hosting
 
-Want to deploy your own instance? Follow the [step-by-step guide](HOWTO.md) — it covers domain setup, Cloudflare Worker configuration, GitHub Pages deployment, mobile setup, and everything in between. No coding knowledge required.
+Want to deploy your own instance? Follow the [step-by-step guide](HOWTO.md) — it covers domain setup, Cloudflare Worker configuration, GitHub Pages deployment, and everything in between. No coding knowledge required.
