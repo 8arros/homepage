@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.7';
+const APP_VERSION = '5.8';
 
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
