@@ -25,21 +25,39 @@ Quick notes scratchpad accessible from the header.
 
 - **Quick Links** — bookmarks organised by category, editable in place
 - **RSS Feeds** — aggregated news from configured sources, fetched via proxy
-- **Calendar** — monthly view with events pulled from CalDAV (Fastmail) and ICS feeds
-- **Todoist Integration** — tasks with three views: Today (including overdue), Upcoming (rest of the week), and All Tasks
-- **Weather** — current conditions and 7-day forecast via Open-Meteo, with air quality index; auto-refreshes every 30 minutes
-- **Daily Briefing** — AI-generated morning/afternoon/evening summary of your calendar, tasks, and weather, powered by Claude Sonnet
+- **Calendar** — monthly view with events pulled from CalDAV (Fastmail) and ICS feeds; click any day in the mini-calendar to filter events for that date
+- **Todoist Integration** — tasks with three views (Today, Upcoming, All Tasks), full task editing (title, description, priority, due date, labels), task notes and comments with Markdown rendering, and delete support
+- **Weather** — current conditions and 5-day forecast via Open-Meteo, with precipitation, pressure, AQI (European), and UV Index with colour bar; auto-refreshes every 30 minutes
+- **Daily Briefing** — AI-generated morning/afternoon/evening summary of your calendar, tasks, and weather, powered by Claude Sonnet 4; automatically regenerates when the time period changes
 - **Sports Briefing** — AI-generated overview of upcoming matches from 17+ ICS sports calendar feeds (Formula 1, Champions League, Europa League, Premier League, and more)
+- **CalDAV Event Editing** — create, edit, and delete CalDAV events directly from the calendar; supports recurring events (edit full series with RRULE/EXDATE preservation)
 - **Quick Notes** — simple scratchpad accessible from the header
 - **Claude Chat** — embedded assistant for quick questions
+- **Settings Export/Import** — backup and restore all settings with a dated JSON file
+
+## Mobile Version
+
+A dedicated mobile-optimised companion at `/mobile/` provides on-the-go access to the essential features:
+
+- **Weather** — full current conditions (temperature, precipitation, pressure, AQI, UV Index) and 5-day forecast with weather icons, matching the desktop layout
+- **Daily Briefing** — same AI-generated briefing as desktop, with auto-refresh when the time period changes
+- **Sports Briefing** — same AI-generated sports overview, with manual refresh
+- **Quick Notes** — transparent textarea synced with the desktop in real time
+- **Swipe navigation** — swipe left/right to move between tabs
+- **Add to Home Screen** — includes web app manifest and custom app icon (gradient calendar) for standalone mode on iOS and Android
+- **Token-based sync** — first-time setup prompts for sync token from the desktop Settings to share all data; accepts full URL or raw token
+- **Auto-refresh** — checks every 60 seconds if the briefing period has changed and regenerates automatically
+
+All data is shared between desktop and mobile through the same KV store and authentication cookies.
 
 ## Architecture
 
-The application is split into two parts:
+The application is split into three parts:
 
 | Component | Hosted on | Purpose |
 |-----------|-----------|---------|
-| `index.html` + `app.js` | GitHub Pages (`home.barros.work`) | UI, all client-side logic |
+| `index.html` + `app.js` | GitHub Pages (`home.barros.work`) | Desktop UI, all client-side logic |
+| `mobile/index.html` | GitHub Pages (`home.barros.work/mobile`) | Mobile UI, self-contained |
 | `worker.js` | Cloudflare Worker (`api.barros.work`) | Auth, CORS proxy, API relay (Claude, Todoist, CalDAV), KV settings storage |
 
 All user settings (links, feeds, API keys, calendars) are stored in Cloudflare Workers KV, synced automatically across devices via a unique token.
@@ -50,14 +68,19 @@ The site is protected by token-based authentication. The Worker validates creden
 
 ## Design
 
-The visual style is intentionally warm and typographic — no bright colours, no harsh contrasts. The palette is built around cream, sand, and brown tones. Typography uses Cormorant Garamond for headers, EB Garamond for body text, and Josefin Sans for labels and UI elements.
+The visual style is intentionally warm and typographic — no bright colours, no harsh contrasts. The palette is built around cream, sand, and brown tones with a multi-stop gradient background and subtle paper noise texture.
+
+Typography uses two fonts throughout:
+
+- **Raleway** (200/300/400/500) — labels, headers, buttons, weather data, calendar times, UI elements
+- **Cormorant Garamond** (300/400/500/600, italic) — body text, briefing content, notes, event titles
 
 ## Built with Claude
 
-This project was developed entirely through conversation. Barros described what he wanted; Claude wrote the code. Every feature, every bug fix, every design decision went through this loop — describe, generate, test, refine. The current version (5.3.3) is the result of dozens of iterative sessions.
+This project was developed entirely through conversation. Barros described what he wanted; Claude wrote the code. Every feature, every bug fix, every design decision went through this loop — describe, generate, test, refine. The current version (5.7) is the result of dozens of iterative sessions spanning multiple days.
 
 No code was written by hand.
 
 ## Self-Hosting
 
-Want to deploy your own instance? Follow the [step-by-step guide](HOWTO.md) — it covers domain setup, Cloudflare Worker configuration, GitHub Pages deployment, and everything in between. No coding knowledge required.
+Want to deploy your own instance? Follow the [step-by-step guide](HOWTO.md) — it covers domain setup, Cloudflare Worker configuration, GitHub Pages deployment, mobile setup, and everything in between. No coding knowledge required.
