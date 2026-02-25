@@ -60,7 +60,7 @@
   .tab-btn.active{color:var(--accent);}
   .tab-btn.active::before{
     content:'';position:absolute;inset:0;
-    background:radial-gradient(ellipse at center,rgba(124,78,42,.1) 0%,transparent 70%);
+    background:radial-gradient(ellipse at center,rgba(124,78,42,.18) 0%,rgba(124,78,42,.06) 50%,transparent 75%);
     pointer-events:none;
   }
   .tab-btn svg{width:1.2rem;height:1.2rem;display:block;}
@@ -68,11 +68,11 @@
   .content{padding:1.2rem 1.4rem 0;overflow-x:hidden;}
   .panel{display:none;}.panel.active{display:block;}
 
-  .briefing-body{font-family:'Cormorant Garamond',serif;font-size:1.25rem;line-height:1.65;color:var(--text);}
+  .briefing-body{font-family:'Cormorant Garamond',serif;font-size:1.35rem;line-height:1.65;color:var(--text);}
   .briefing-body p{margin-bottom:1rem;}
-  .briefing-empty{font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--text-lt);font-size:1.1rem;text-align:center;padding:2rem 0;}
+  .briefing-empty{font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--text-lt);font-size:1.15rem;text-align:center;padding:2rem 0;}
   .refresh-row{display:flex;justify-content:flex-end;margin-bottom:.8rem;}
-  .refresh-btn{background:none;border:none;cursor:pointer;color:var(--text-lt);font-family:'Raleway',sans-serif;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;display:flex;align-items:center;gap:.3rem;transition:color .18s;}
+  .refresh-btn{background:none;border:none;cursor:pointer;color:var(--text-lt);font-family:'Raleway',sans-serif;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;display:flex;align-items:center;gap:.3rem;transition:color .18s;}
   .refresh-btn:hover{color:var(--accent);}
   .refresh-btn svg{width:.85rem;height:.85rem;}
 
@@ -83,34 +83,34 @@
   .wx-temp sup{font-size:1.1rem;vertical-align:super;color:var(--accent-lt);}
   .wx-right{flex:1;}
   .wx-hilo-row{display:flex;align-items:center;gap:.3rem;margin-bottom:.15rem;}
-  .wx-hi{font-family:'Raleway',sans-serif;font-size:.9rem;font-weight:500;color:var(--accent);}
-  .wx-lo{font-family:'Raleway',sans-serif;font-size:.9rem;color:var(--text-lt);}
-  .wx-lbl-hl{font-family:'Raleway',sans-serif;font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-lt);}
-  .wx-sep{font-family:'Raleway',sans-serif;font-size:.6rem;color:var(--border);margin:0 .15rem;}
-  .wx-condition{font-family:'Raleway',sans-serif;font-size:.9rem;color:var(--text-mid);margin-bottom:.1rem;}
-  .wx-loc{font-family:'Raleway',sans-serif;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-lt);}
+  .wx-hi{font-family:'Raleway',sans-serif;font-size:1rem;font-weight:500;color:var(--accent);}
+  .wx-lo{font-family:'Raleway',sans-serif;font-size:1rem;color:var(--text-lt);}
+  .wx-lbl-hl{font-family:'Raleway',sans-serif;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-lt);}
+  .wx-sep{font-family:'Raleway',sans-serif;font-size:.65rem;color:var(--border);margin:0 .15rem;}
+  .wx-condition{font-family:'Raleway',sans-serif;font-size:1rem;color:var(--text-mid);margin-bottom:.1rem;}
+  .wx-loc{font-family:'Raleway',sans-serif;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-lt);}
   .wx-stats{display:grid;grid-template-columns:1fr 1fr;gap:.6rem 1rem;margin:.8rem 0 1rem;padding:.8rem 0;border-top:1px solid var(--border-lt);border-bottom:1px solid var(--border-lt);}
-  .wx-stat-lbl{font-family:'Raleway',sans-serif;font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-lt);display:block;margin-bottom:.12rem;}
-  .wx-stat-val{font-family:'Raleway',sans-serif;font-size:.9rem;font-weight:500;color:var(--text);}
-  .wx-stat-unit{font-family:'Raleway',sans-serif;font-size:.55rem;color:var(--text-lt);margin-left:.15rem;}
+  .wx-stat-lbl{font-family:'Raleway',sans-serif;font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;color:var(--text-lt);display:block;margin-bottom:.12rem;}
+  .wx-stat-val{font-family:'Raleway',sans-serif;font-size:1rem;font-weight:500;color:var(--text);}
+  .wx-stat-unit{font-family:'Raleway',sans-serif;font-size:.6rem;color:var(--text-lt);margin-left:.15rem;}
   .uv-bar-bg{height:3px;border-radius:2px;background:linear-gradient(to right,#4caf50,#cddc39,#ffeb3b,#ff9800,#f44336,#9c27b0);position:relative;margin-top:.35rem;}
   .uv-marker{position:absolute;top:-4px;width:9px;height:9px;border-radius:50%;background:var(--accent);border:2px solid var(--bg-card);transform:translateX(-50%);}
-  .wx-forecast-title{font-family:'Raleway',sans-serif;font-size:.65rem;font-weight:300;letter-spacing:.22em;text-transform:uppercase;color:var(--text-lt);padding-bottom:.35rem;margin-bottom:.5rem;border-bottom:1px solid var(--border-lt);}
+  .wx-forecast-title{font-family:'Raleway',sans-serif;font-size:.72rem;font-weight:300;letter-spacing:.22em;text-transform:uppercase;color:var(--text-lt);padding-bottom:.35rem;margin-bottom:.5rem;border-bottom:1px solid var(--border-lt);}
 
   /* Forecast rows — two lines per day, no lateral overflow */
   .fc-row{display:flex;align-items:center;gap:.5rem;padding:.5rem 0;border-bottom:1px solid rgba(201,185,154,.25);}
   .fc-row:last-child{border-bottom:none;}
   .fc-left{display:flex;align-items:center;gap:.5rem;flex-shrink:0;}
-  .fc-day{font-family:'Raleway',sans-serif;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-lt);width:2.8rem;}
-  .fc-icon{width:1.8rem;height:1.8rem;flex-shrink:0;}
+  .fc-day{font-family:'Raleway',sans-serif;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-lt);width:3rem;}
+  .fc-icon{width:2rem;height:2rem;flex-shrink:0;}
   .fc-center{flex:1;min-width:0;}
-  .fc-meta{font-family:'Raleway',sans-serif;font-size:.65rem;letter-spacing:.04em;color:var(--text-lt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .fc-meta{font-family:'Raleway',sans-serif;font-size:.75rem;letter-spacing:.04em;color:var(--text-lt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .fc-temps{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;}
-  .fc-hi{font-family:'Raleway',sans-serif;font-size:.9rem;font-weight:500;color:var(--text);line-height:1.2;}
-  .fc-lo{font-family:'Raleway',sans-serif;font-size:.8rem;color:var(--text-lt);line-height:1.2;}
+  .fc-hi{font-family:'Raleway',sans-serif;font-size:1rem;font-weight:500;color:var(--text);line-height:1.2;}
+  .fc-lo{font-family:'Raleway',sans-serif;font-size:.9rem;color:var(--text-lt);line-height:1.2;}
 
   /* Notes — transparent */
-  .notes-area{width:100%;min-height:70dvh;resize:none;background:transparent;border:none;padding:.2rem 0;outline:none;font-family:'Cormorant Garamond',serif;font-size:1.2rem;line-height:1.7;color:var(--text);}
+  .notes-area{width:100%;min-height:70dvh;resize:none;background:transparent;border:none;padding:.2rem 0;outline:none;font-family:'Cormorant Garamond',serif;font-size:1.3rem;line-height:1.7;color:var(--text);}
   .notes-area::placeholder{color:var(--text-lt);font-style:italic;}
   .notes-actions{display:flex;justify-content:flex-end;margin-top:.5rem;}
   .clear-btn{background:none;border:none;cursor:pointer;font-family:'Raleway',sans-serif;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-lt);}
