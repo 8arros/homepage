@@ -11,11 +11,12 @@ A step-by-step guide to deploy your own instance of Home. No coding knowledge re
 
 ## Architecture Overview
 
-The site has two parts:
+The site has three parts:
 
 | Part | What it does | Where it runs |
 |------|-------------|---------------|
-| **Frontend** (`index.html` + `app.js`) | Everything you see — the UI | GitHub Pages |
+| **Frontend** (`index.html` + `app.js`) | Desktop dashboard — the full UI | GitHub Pages |
+| **Mobile** (`mobile/index.html` + icons + manifest) | Mobile companion — weather, briefings, notes | GitHub Pages |
 | **Backend** (`worker.js`) | Authentication, API proxy, settings storage | Cloudflare Worker |
 
 The frontend talks to the backend through a subdomain. In the original setup, this is `home.barros.work` (frontend) and `api.barros.work` (backend). You'll replace these with your own domain.
@@ -130,9 +131,9 @@ This gives your worker a clean URL like `api.yourdomain.com` instead of `startpa
 
 ### 3.2 — Update the Code
 
-Before uploading, you need to change one line in `index.html` to point to your own backend.
+Before uploading, you need to change the API base URL in two files to point to your own backend.
 
-Open `index.html` in any text editor and find this line (near the bottom, around line 1064):
+**Desktop** — open `index.html` in any text editor and find this line (near the bottom):
 
 ```javascript
 const API_BASE = 'https://api.barros.work';
@@ -144,20 +145,45 @@ Change it to your own API subdomain:
 const API_BASE = 'https://api.yourdomain.com';
 ```
 
-That's the **only change needed in the code**. Save the file.
+**Mobile** — open `mobile/index.html` and make the same change:
+
+```javascript
+const API_BASE='https://api.barros.work';
+```
+
+Change to:
+
+```javascript
+const API_BASE='https://api.yourdomain.com';
+```
+
+These are the **only changes needed in the code**.
 
 ### 3.3 — Upload the Files
 
-Upload these files to the root of your repository:
+Upload these files to your repository, preserving the folder structure:
 
-- `index.html`
-- `app.js`
+```
+/
+├── index.html
+├── app.js
+└── mobile/
+    ├── index.html
+    ├── manifest.json
+    ├── icon-180.png
+    ├── icon-192.png
+    └── icon-512.png
+```
 
 You can do this through GitHub's web interface:
 
 1. In your repository, click **Add file** → **Upload files**
-2. Drag in both files
+2. Drag in `index.html` and `app.js`
 3. Click **Commit changes**
+4. Click **Add file** → **Create new file**
+5. Type `mobile/index.html` as the filename (this creates the folder)
+6. Paste the contents of the mobile `index.html`
+7. Commit, then upload the remaining mobile files (`manifest.json` and the three PNG icons) into the `mobile/` folder
 
 ### 3.4 — Enable GitHub Pages
 
@@ -190,12 +216,24 @@ Back in GitHub, wait a few minutes for the domain to verify. Once verified, tick
 
 ## Part 4 — Test Everything
 
+### Desktop
+
 1. Go to `https://home.yourdomain.com`
 2. You should see a login screen
 3. Enter the password you set as `AUTH_PASS` in the worker secrets
 4. After logging in, you'll see the dashboard
 
-If something doesn't work:
+### Mobile
+
+1. On your phone, go to `https://home.yourdomain.com/mobile`
+2. If this is a new device, you'll be prompted to paste a sync token
+3. On the desktop site, open **Settings** → copy the **Mobile** sync URL
+4. Paste it into the token field on mobile, then log in
+5. To save as an app: in Safari, tap **Share** → **Add to Home Screen**
+
+The app icon shows a calendar on the site's warm gradient background, and the app opens in standalone mode (no browser bar).
+
+### Troubleshooting
 
 | Problem | Solution |
 |---------|----------|
@@ -203,6 +241,8 @@ If something doesn't work:
 | Redirect loop | Make sure Cloudflare SSL mode is **Full**, not Flexible |
 | Page shows but no data loads | Check browser console for errors — likely `ALLOWED_ORIGIN` doesn't match |
 | DNS not resolving | Wait up to 24 hours for propagation, or check your CNAME records |
+| Mobile shows no data after login | You need to sync the token first — copy the Mobile sync URL from desktop Settings and paste it on first use |
+| Weather icons broken on mobile | Make sure the device has internet access — icons are loaded from an external CDN |
 
 ---
 
@@ -218,6 +258,9 @@ Once logged in, everything is configured through the site's settings modal (gear
 - **Calendar (ICS):** Add ICS feed URLs for subscribed calendars
 - **Sports:** Add ICS feeds for sports schedules
 - **Briefings:** Add your Claude API key for AI-generated daily and sports briefings (get it from [Anthropic Console](https://console.anthropic.com/))
+- **Sync:** Copy the Desktop or Mobile sync URL to set up additional devices
+
+All settings are stored remotely in Cloudflare KV and sync automatically across all devices that share the same token.
 
 ---
 
@@ -226,9 +269,10 @@ Once logged in, everything is configured through the site's settings modal (gear
 To update the site after changes:
 
 1. Upload the new `index.html` and/or `app.js` to your GitHub repository (overwriting the old files)
-2. GitHub Pages will automatically redeploy within a minute
-3. Hard-refresh your browser (`Ctrl+Shift+R` or `Cmd+Shift+R`) to clear the cache
+2. For mobile updates, upload the new `mobile/index.html` as well
+3. GitHub Pages will automatically redeploy within a minute
+4. Hard-refresh your browser (`Ctrl+Shift+R` or `Cmd+Shift+R`) to clear the cache
 
-Both files include a version number visible in **Settings** at the bottom — you can compare `HTML x.y.z` and `JS x.y.z` to confirm both files are up to date.
+Both desktop files include a version number visible in **Settings** at the bottom — you can compare `HTML x.y.z` and `JS x.y.z` to confirm both files are up to date.
 
 To update the worker, go to **Workers & Pages** → your worker → **Edit code**, paste the new `worker.js`, and click **Deploy**.
