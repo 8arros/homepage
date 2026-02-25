@@ -19,17 +19,29 @@
     --text-lt:#9a7960;--accent:#7c4e2a;--accent-lt:#a3683e;--err:#a04030;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
+  html{
+    background:linear-gradient(180deg,var(--bg-top) 0%,#fdf6e8 15%,#f5e8c8 40%,#edd8a8 70%,var(--bg-bot) 100%);
+    background-attachment:fixed;
+    min-height:100%;
+  }
   body{
     font-family:'Cormorant Garamond',Georgia,serif;
-    background:linear-gradient(180deg,var(--bg-top) 0%,#fdf6e8 15%,#f5e8c8 40%,#edd8a8 70%,var(--bg-bot) 100%);
-    background-attachment:fixed;min-height:100dvh;color:var(--text);
+    min-height:100dvh;color:var(--text);
     -webkit-font-smoothing:antialiased;position:relative;
+    background:transparent;
+    /* Extra padding at bottom so scroll never reveals grey */
+    padding-bottom:40dvh;
   }
   body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23n)' opacity='0.30'/%3E%3C/svg%3E");
     background-repeat:repeat;background-size:150px 150px;mix-blend-mode:multiply;}
   body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     background:radial-gradient(ellipse at center,transparent 50%,rgba(20,8,0,0.45) 100%);}
+
+  /* iOS overscroll background */
+  @supports (-webkit-touch-callout: none) {
+    html { background-color: var(--bg-bot); }
+  }
 
   #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:2rem;position:relative;z-index:1;}
   .login-box{background:var(--bg-card);border:1px solid var(--border-lt);border-radius:4px;padding:2rem;width:100%;max-width:320px;text-align:center;box-shadow:0 2px 12px rgba(61,43,31,.1);}
@@ -43,12 +55,25 @@
   .logo{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;letter-spacing:.08em;color:var(--accent);}
   .date-str{font-family:'Raleway',sans-serif;font-size:.62rem;font-weight:300;letter-spacing:.18em;text-transform:uppercase;color:var(--text-mid);}
 
-  .tabs{display:flex;gap:0;padding:0 1.4rem;border-bottom:1px solid var(--border-lt);}
-  .tab-btn{flex:1;display:flex;align-items:center;justify-content:center;padding:.7rem .5rem;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-lt);cursor:pointer;transition:color .18s,border-color .18s;}
-  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+  /* Tabs with subtle active shade */
+  .tabs{display:flex;gap:0;padding:0;position:relative;}
+  .tab-btn{
+    flex:1;display:flex;align-items:center;justify-content:center;
+    padding:.7rem .5rem;background:none;border:none;
+    color:var(--text-lt);cursor:pointer;transition:color .18s,background .2s;
+    position:relative;
+  }
+  .tab-btn.active{color:var(--accent);background:rgba(124,78,42,.08);}
   .tab-btn svg{width:1.15rem;height:1.15rem;display:block;}
+  /* Thin accent line under active tab */
+  .tab-indicator{
+    position:absolute;bottom:0;height:2px;background:var(--accent-lt);
+    transition:left .25s ease,width .25s ease;
+    opacity:.6;
+  }
+  .tabs-wrap{position:relative;border-bottom:1px solid var(--border-lt);}
 
-  .content{padding:1.2rem 1.4rem 3rem;}
+  .content{padding:1.2rem 1.4rem 0;}
   .panel{display:none;}.panel.active{display:block;}
 
   .briefing-body{font-family:'Cormorant Garamond',serif;font-size:1.25rem;line-height:1.65;color:var(--text);}
@@ -59,7 +84,7 @@
   .refresh-btn:hover{color:var(--accent);}
   .refresh-btn svg{width:.85rem;height:.85rem;}
 
-  /* Weather — matching desktop layout */
+  /* Weather */
   .wx-current{display:flex;align-items:flex-start;gap:.8rem;margin-bottom:.8rem;}
   .wx-icon{width:4rem;height:4rem;flex-shrink:0;}
   .wx-temp{font-family:'Raleway',sans-serif;font-size:3.2rem;font-weight:200;line-height:1;color:var(--accent);}
@@ -72,14 +97,12 @@
   .wx-sep{font-family:'Raleway',sans-serif;font-size:.55rem;color:var(--border);margin:0 .15rem;}
   .wx-condition{font-family:'Raleway',sans-serif;font-size:.85rem;color:var(--text-mid);margin-bottom:.1rem;}
   .wx-loc{font-family:'Raleway',sans-serif;font-size:.57rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-lt);}
-
   .wx-stats{display:grid;grid-template-columns:1fr 1fr;gap:.5rem .8rem;margin:.8rem 0 1rem;padding:.8rem 0;border-top:1px solid var(--border-lt);border-bottom:1px solid var(--border-lt);}
   .wx-stat-lbl{font-family:'Raleway',sans-serif;font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-lt);display:block;margin-bottom:.12rem;}
   .wx-stat-val{font-family:'Raleway',sans-serif;font-size:.85rem;font-weight:500;color:var(--text);}
   .wx-stat-unit{font-family:'Raleway',sans-serif;font-size:.5rem;color:var(--text-lt);margin-left:.15rem;}
   .uv-bar-bg{height:3px;border-radius:2px;background:linear-gradient(to right,#4caf50,#cddc39,#ffeb3b,#ff9800,#f44336,#9c27b0);position:relative;margin-top:.35rem;}
   .uv-marker{position:absolute;top:-4px;width:9px;height:9px;border-radius:50%;background:var(--accent);border:2px solid var(--bg-card);transform:translateX(-50%);transition:left .4s;}
-
   .wx-forecast-title{font-family:'Raleway',sans-serif;font-size:.6rem;font-weight:300;letter-spacing:.22em;text-transform:uppercase;color:var(--text-lt);padding-bottom:.35rem;margin-bottom:.5rem;border-bottom:1px solid var(--border-lt);}
   .fc-row{display:flex;align-items:center;gap:.4rem;padding:.35rem 0;}
   .fc-day{font-family:'Raleway',sans-serif;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-lt);width:2.6rem;}
@@ -88,9 +111,15 @@
   .fc-hi{font-family:'Raleway',sans-serif;font-size:.85rem;font-weight:500;color:var(--text);text-align:right;width:2.5rem;}
   .fc-lo{font-family:'Raleway',sans-serif;font-size:.85rem;color:var(--text-lt);text-align:right;width:2.5rem;}
 
-  /* Notes */
-  .notes-area{width:100%;min-height:70dvh;resize:none;background:var(--bg-input);border:1px solid var(--border-lt);border-radius:2px;padding:1rem;outline:none;font-family:'Cormorant Garamond',serif;font-size:1.2rem;line-height:1.7;color:var(--text);}
-  .notes-area:focus{border-color:var(--accent);}
+  /* Notes — transparent */
+  .notes-area{
+    width:100%;min-height:70dvh;resize:none;
+    background:transparent;border:none;
+    padding:.2rem 0;outline:none;
+    font-family:'Cormorant Garamond',serif;font-size:1.2rem;
+    line-height:1.7;color:var(--text);
+  }
+  .notes-area::placeholder{color:var(--text-lt);font-style:italic;}
   .notes-actions{display:flex;justify-content:flex-end;margin-top:.5rem;}
   .clear-btn{background:none;border:none;cursor:pointer;font-family:'Raleway',sans-serif;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-lt);transition:color .18s;}
   .clear-btn:hover{color:var(--accent);}
@@ -125,24 +154,25 @@
     <span class="logo">Home</span>
     <span class="date-str" id="dateStr"></span>
   </div>
-  <div class="tabs">
-    <!-- Order: Weather, Daily, Sports, Notes -->
-    <button class="tab-btn active" id="tabWeather" onclick="switchTab('weather')" title="Weather">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-    </button>
-    <button class="tab-btn" id="tabDaily" onclick="switchTab('daily')" title="Daily Briefing">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-    </button>
-    <button class="tab-btn" id="tabSports" onclick="switchTab('sports')" title="Sports">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6m12 5h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16m-10-7.34V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22m7-7.34V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0z"/></svg>
-    </button>
-    <button class="tab-btn" id="tabNotes" onclick="switchTab('notes')" title="Notes">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-    </button>
+  <div class="tabs-wrap">
+    <div class="tabs" id="tabsBar">
+      <button class="tab-btn active" id="tabWeather" onclick="switchTab('weather')" title="Weather">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <button class="tab-btn" id="tabDaily" onclick="switchTab('daily')" title="Daily Briefing">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="8" cy="14" r=".5" fill="currentColor"/><circle cx="12" cy="14" r=".5" fill="currentColor"/><circle cx="16" cy="14" r=".5" fill="currentColor"/><circle cx="8" cy="18" r=".5" fill="currentColor"/><circle cx="12" cy="18" r=".5" fill="currentColor"/></svg>
+      </button>
+      <button class="tab-btn" id="tabSports" onclick="switchTab('sports')" title="Sports">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6m12 5h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16m-10-7.34V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22m7-7.34V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0z"/></svg>
+      </button>
+      <button class="tab-btn" id="tabNotes" onclick="switchTab('notes')" title="Notes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+      </button>
+    </div>
+    <div class="tab-indicator" id="tabIndicator"></div>
   </div>
   <div class="content">
     <div class="panel active" id="panelWeather">
-      <div class="refresh-row"><button class="refresh-btn" onclick="loadWeather()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>Refresh</button></div>
       <div id="weatherContent"><div class="briefing-empty">Loading weather…</div></div>
     </div>
     <div class="panel" id="panelDaily">
@@ -181,7 +211,7 @@ function kvGet(k){return kvCache.get(k)??null;}
 function kvSet(k,v){kvCache.set(k,String(v));kvFetch('POST','/kv/set',{entries:{[k]:String(v)}});}
 function kvRemove(k){kvCache.delete(k);kvFetch('DELETE',`/kv/delete/${encodeURIComponent(k)}`);}
 
-// ── Weather functions (matching desktop) ──
+// ── Weather (matching desktop) ──
 function wmoCondition(code,isDay){if(code===0)return isDay?'Sunny':'Clear';if(code<=2)return'Partly Cloudy';if(code===3)return'Overcast';if(code<=49)return'Fog';if(code<=55)return'Drizzle';if(code<=57)return'Freezing Drizzle';if(code<=61)return'Light Rain';if(code<=65)return'Heavy Rain';if(code<=67)return'Freezing Rain';if(code<=71)return'Light Snow';if(code<=75)return'Heavy Snow';if(code===77)return'Snow Grains';if(code<=82)return'Rain Showers';if(code<=84)return'Heavy Showers';if(code<=86)return'Snow Showers';if(code<=99)return'Thunderstorm';return'Unknown';}
 function getIcon(condition,night){const c=(condition||'').toLowerCase(),dn=night?'night':'day';if(c.includes('thunderstorm'))return`thunderstorms-${dn}`;if(c.includes('drizzle'))return'drizzle';if(c.includes('light rain'))return`partly-cloudy-${dn}-rain`;if(c.includes('heavy rain'))return'rain';if(c.includes('rain')||c.includes('shower'))return'rain';if(c.includes('snow')||c.includes('blizzard'))return'snow';if(c.includes('sleet'))return'sleet';if(c.includes('fog')||c.includes('mist'))return`fog-${dn}`;if(c.includes('overcast'))return`overcast-${dn}`;if(c.includes('partly')||c.includes('scattered'))return`partly-cloudy-${dn}`;if(c.includes('cloudy')||c.includes('cloud'))return'cloudy';if(c.includes('clear')||c.includes('sunny'))return`clear-${dn}`;return'not-available';}
 function aqiLabel(a){if(a<=50)return'Good';if(a<=100)return'Moderate';if(a<=150)return'Unhlthy·SG';if(a<=200)return'Unhealthy';return'Hazardous';}
@@ -194,22 +224,18 @@ async function loadWeather(){
   try{
     const loc=JSON.parse(locRaw);
     const wxUrl=`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,weather_code,is_day,surface_pressure&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max&timezone=auto&forecast_days=7`;
-    const aqUrl=`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${loc.lat}&longitude=${loc.lon}&hourly=european_aqi&forecast_days=1&timezone=auto`;
+    const aqUrl=`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${loc.lat}&longitude=${loc.lon}&hourly=european_aqi&forecast_days=7&timezone=auto`;
     const[wxRes,aqRes]=await Promise.all([fetch(wxUrl),fetch(aqUrl)]);
     const wx=await wxRes.json(),aq=await aqRes.json();
     const cur=wx.current,daily=wx.daily,curNight=cur.is_day===0;
     const curCond=wmoCondition(cur.weather_code,!curNight);
     const icon=getIcon(curCond,curNight);
 
-    // Today's AQI (max of hourly)
-    const aqiH=aq.hourly?.european_aqi||[];
-    let todayAqi=null;aqiH.forEach(v=>{if(v!=null)todayAqi=Math.max(todayAqi??0,v);});
-
-    // Daily AQI map for forecast
-    const aqiTimes=aq.hourly?.time||[];
+    // Build daily max AQI from hourly (7 days)
+    const aqiH=aq.hourly?.european_aqi||[],aqiTimes=aq.hourly?.time||[];
     const dailyAqi={};
     aqiTimes.forEach((t,i)=>{const day=t.slice(0,10),val=aqiH[i];if(val!=null)dailyAqi[day]=Math.max(dailyAqi[day]??0,val);});
-
+    const todayAqi=dailyAqi[daily.time[0]]??null;
     const uv=daily.uv_index_max[0];
     const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
@@ -222,14 +248,12 @@ async function loadWeather(){
         <div class="wx-loc">${loc.name||'—'}</div>
       </div>
     </div>`;
-
     html+=`<div class="wx-stats">
       <div><span class="wx-stat-lbl">Precipitation</span><span class="wx-stat-val">${daily.precipitation_probability_max[0]??'—'}<span class="wx-stat-unit">%</span></span></div>
       <div><span class="wx-stat-lbl">Pressure</span><span class="wx-stat-val">${Math.round(cur.surface_pressure)}<span class="wx-stat-unit">hPa</span></span></div>
       <div><span class="wx-stat-lbl">AQI</span><span class="wx-stat-val">${todayAqi!=null?todayAqi+' · '+aqiLabel(todayAqi):'—'}</span></div>
       <div><span class="wx-stat-lbl">UV Index</span><span class="wx-stat-val">${uv!=null?uv.toFixed(1)+' · '+uvLabel(uv):'—'}</span><div class="uv-bar-bg"><div class="uv-marker" style="left:${uv!=null?Math.min(uv/11*100,100):0}%"></div></div></div>
     </div>`;
-
     html+=`<div class="wx-forecast-title">5-Day Forecast</div>`;
     daily.time.slice(0,5).forEach((dateStr,i)=>{
       const dayName=i===0?'Today':DAYS[new Date(dateStr+'T12:00:00').getDay()];
@@ -258,30 +282,23 @@ function loadDailyFromCache(){const k=kvGet('briefing_date'),t=kvGet('briefing_c
 function loadSportsFromCache(){const k=kvGet('sports_briefing_date'),t=kvGet('sports_briefing_cache');if(k===getBriefingCacheKey()&&t){renderText(document.getElementById('sportsBody'),t);return true;}return false;}
 
 async function refreshBriefing(type){
-  const el=document.getElementById(type==='daily'?'dailyBody':'sportsBody');
-  const btn=document.getElementById(type==='daily'?'refreshDaily':'refreshSports');
-  const apiKey=kvGet('claude_api_key');
+  const el=document.getElementById(type==='daily'?'dailyBody':'sportsBody');const btn=document.getElementById(type==='daily'?'refreshDaily':'refreshSports');const apiKey=kvGet('claude_api_key');
   if(!apiKey){el.innerHTML='<div class="briefing-empty">Configure Claude API key in desktop.</div>';return;}
   el.innerHTML='<div class="briefing-empty">Generating…</div>';if(btn)btn.disabled=true;
-  try{
-    const period=getBriefingPeriod();let prompt;
-    if(type==='daily'){
-      let todoData='',weatherData='';const todoistToken=kvGet('todoist_api_token');
+  try{const period=getBriefingPeriod();let prompt;
+    if(type==='daily'){let todoData='',weatherData='';const todoistToken=kvGet('todoist_api_token');
       if(todoistToken){try{const sp=new URLSearchParams();sp.set('sync_token','*');sp.set('resource_types','["items","projects"]');const tr=await authFetch(`${API_BASE}/todoist`,{method:'POST',headers:{'x-todoist-token':todoistToken,'Content-Type':'application/x-www-form-urlencoded'},body:sp.toString()});const td=await tr.json();if(td.items){const a=td.items.filter(t=>!t.checked&&!t.is_deleted),today=new Date().toISOString().slice(0,10),u=a.filter(t=>t.due&&t.due.date&&t.due.date<=today).slice(0,10);if(u.length)todoData='Tasks due today:\n'+u.map(t=>`- ${t.content}`).join('\n');}}catch{}}
-      const locRaw=kvGet('weather_location');
-      if(locRaw){try{const loc=JSON.parse(locRaw);const wr=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=3`);const wd=await wr.json();if(wd.current){weatherData=`Current: ${wd.current.temperature_2m}°C`;if(wd.daily)weatherData+=`\nToday: ${wd.daily.temperature_2m_max[0]}°/${wd.daily.temperature_2m_min[0]}°, precip ${wd.daily.precipitation_probability_max[0]}%`;}}catch{}}
+      const locRaw=kvGet('weather_location');if(locRaw){try{const loc=JSON.parse(locRaw);const wr=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=3`);const wd=await wr.json();if(wd.current){weatherData=`Current: ${wd.current.temperature_2m}°C`;if(wd.daily)weatherData+=`\nToday: ${wd.daily.temperature_2m_max[0]}°/${wd.daily.temperature_2m_min[0]}°, precip ${wd.daily.precipitation_probability_max[0]}%`;}}catch{}}
       const g={morning:'Good morning',afternoon:'Good afternoon',evening:'Good evening'}[period];
       prompt=`You are a sharp personal assistant. Write a concise ${period} briefing.\n\n${weatherData?'Weather:\n'+weatherData+'\n\n':''}${todoData?todoData+'\n\n':''}Rules:\n- Start with "${g}"\n- 2–3 short paragraphs, plain prose, no bullet points, no headers, no bold, no markdown\n- If tasks, mention naturally\n- If weather, weave in naturally\n- Warm and concise`;
-    }else{
-      const sportsRaw=kvGet('sports_calendars');let sportsText='';
+    }else{const sportsRaw=kvGet('sports_calendars');let sportsText='';
       if(sportsRaw){try{const cals=JSON.parse(sportsRaw);const results=await Promise.allSettled(cals.map(async c=>{const r=await authFetch(`${API_BASE}/?url=${encodeURIComponent(c.url)}`);return await r.text();}));const now=new Date(),week=new Date(now.getTime()+7*86400000),events=[];
         for(const r of results){if(r.status!=='fulfilled')continue;const lines=r.value.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\n[ \t]/g,'').split('\n');let inEv=false,ev={};for(const l of lines){const line=l.trim();if(line==='BEGIN:VEVENT'){inEv=true;ev={};continue;}if(line==='END:VEVENT'){if(ev.start&&ev.title&&ev.start>=now&&ev.start<=week)events.push(ev);inEv=false;continue;}if(!inEv)continue;const ci=line.indexOf(':');if(ci===-1)continue;const key=line.slice(0,ci).split(';')[0].toUpperCase(),val=line.slice(ci+1);if(key==='SUMMARY')ev.title=val.replace(/\\,/g,',').replace(/\\n/g,' ').trim();if(key==='DTSTART'){const clean=val.replace(/[^0-9T]/g,'');const y=+clean.slice(0,4),mo=+clean.slice(4,6)-1,d=+clean.slice(6,8);if(clean.includes('T')){const h=+clean.slice(9,11),mi=+clean.slice(11,13);ev.start=val.endsWith('Z')?new Date(Date.UTC(y,mo,d,h,mi)):new Date(y,mo,d,h,mi);}else ev.start=new Date(y,mo,d);}}}
         events.sort((a,b)=>a.start-b.start);if(events.length){const dn=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];sportsText=events.slice(0,20).map(e=>{const d=e.start,time=d.getHours()?`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`:'all day';return`${dn[d.getDay()]} ${d.getDate()}/${d.getMonth()+1} ${time} — ${e.title}`;}).join('\n');}
       }catch{}}
       if(!sportsText){el.innerHTML='<div class="briefing-empty">No sports events found.</div>';if(btn)btn.disabled=false;return;}
       const g={morning:'Good morning',afternoon:'Good afternoon',evening:'Good evening'}[period];
-      prompt=`You are a sports-savvy personal assistant. Write a concise sports briefing (times are Lisbon/Portugal time):\n\n${sportsText}\n\nRules:\n- Start with "${g}"\n- 2–4 short paragraphs, plain prose, no bullets/headers/bold/markdown\n- Group: football, F1, tennis\n- Warm and conversational, English always`;
-    }
+      prompt=`You are a sports-savvy personal assistant. Write a concise sports briefing (times are Lisbon/Portugal time):\n\n${sportsText}\n\nRules:\n- Start with "${g}"\n- 2–4 short paragraphs, plain prose, no bullets/headers/bold/markdown\n- Group: football, F1, tennis\n- Warm and conversational, English always`;}
     const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();const text=data?.content?.[0]?.text||'Could not generate briefing.';
     if(type==='daily'){kvSet('briefing_cache',text);kvSet('briefing_date',getBriefingCacheKey());}else{kvSet('sports_briefing_cache',text);kvSet('sports_briefing_date',getBriefingCacheKey());}
@@ -295,16 +312,34 @@ function loadNotes(){const ta=document.getElementById('notesArea'),v=kvGet('quic
 function saveNotes(){const ta=document.getElementById('notesArea');kvSet('quick_notes',ta.value);document.getElementById('clearBtn').style.display=ta.value?'':'none';}
 function clearNotes(){if(!confirm('Clear all notes?'))return;document.getElementById('notesArea').value='';kvRemove('quick_notes');document.getElementById('clearBtn').style.display='none';}
 
-// ── Tabs ──
+// ── Tabs with sliding indicator ──
 let activeTab='weather';
-function switchTab(tab){activeTab=tab;document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById('panel'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');if(tab==='notes')loadNotes();}
+function updateIndicator(){
+  const btn=document.querySelector('.tab-btn.active');
+  const ind=document.getElementById('tabIndicator');
+  if(!btn||!ind)return;
+  ind.style.left=btn.offsetLeft+'px';
+  ind.style.width=btn.offsetWidth+'px';
+}
+function switchTab(tab){
+  activeTab=tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  updateIndicator();
+  if(tab==='notes')loadNotes();
+}
+window.addEventListener('resize',updateIndicator);
 
 function updateDate(){const d=new Date(),dn=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];document.getElementById('dateStr').textContent=`${dn[d.getDay()]} ${d.getDate()} ${mn[d.getMonth()]} ${d.getFullYear()}`;}
 
 async function startApp(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='block';
-  updateDate();await kvLoadAll();
+  updateDate();
+  await kvLoadAll();
+  requestAnimationFrame(updateIndicator);
   loadWeather();
   if(!loadDailyFromCache())refreshBriefing('daily');
   if(!loadSportsFromCache())refreshBriefing('sports');
