@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Home">
-<meta name="theme-color" content="#ead4a8">
+<meta name="theme-color" content="#ffffff">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
 <title>Home</title>
@@ -37,7 +37,7 @@
   /* No vignette — removed body::after */
   @supports (-webkit-touch-callout: none) { html { background-color: var(--bg-bot); } }
 
-  #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:2rem;position:relative;z-index:1;}
+  #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:2rem;padding-top:calc(env(safe-area-inset-top, 0px) + 2rem);position:relative;z-index:1;}
   .login-box{background:var(--bg-card);border:1px solid var(--border-lt);border-radius:4px;padding:2rem;width:100%;max-width:320px;text-align:center;box-shadow:0 2px 12px rgba(61,43,31,.1);}
   .login-box h2{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;letter-spacing:.08em;color:var(--accent);margin-bottom:1.2rem;}
   .login-box input{display:block;width:100%;padding:.6rem .8rem;background:var(--bg-input);border:1px solid var(--border-lt);border-radius:2px;font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--text);outline:none;margin-bottom:.7rem;transition:border-color .18s;}
@@ -45,7 +45,7 @@
   .login-box button{width:100%;padding:.55rem;background:var(--accent);color:#fdf6e8;border:none;border-radius:2px;font-family:'Raleway',sans-serif;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;}
 
   #app{display:none;position:relative;z-index:1;}
-  .header{display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.4rem .6rem;}
+  .header{display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.4rem .6rem;padding-top:calc(env(safe-area-inset-top, 0px) + 1.2rem);}
   .logo{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;letter-spacing:.08em;color:var(--accent);}
   .date-str{font-family:'Raleway',sans-serif;font-size:.62rem;font-weight:300;letter-spacing:.18em;text-transform:uppercase;color:var(--text-mid);}
 
@@ -161,6 +161,7 @@
   </div>
   <div class="content" id="contentArea">
     <div class="panel active" id="panelWeather">
+      <div class="refresh-row"><button class="refresh-btn" onclick="loadWeather()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>Refresh</button></div>
       <div id="weatherContent"><div class="briefing-empty">Loading weather…</div></div>
     </div>
     <div class="panel" id="panelDaily">
