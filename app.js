@@ -2720,9 +2720,12 @@ function buildSportsBriefingPrompt() {
   if (!sportsRawCache.length) return null;
 
   const events = [];
+  // For allDay events, use start-of-today as the lower bound so they're
+  // never excluded just because the current time is past midnight.
+  const wsAllDay = new Date(today); // midnight, already set above
   for (const rev of sportsRawCache) {
     if (!rev.start || !rev.title) continue;
-    const ws = new Date(windowStart);
+    const ws = rev.allDay ? wsAllDay : new Date(windowStart);
     const we = new Date(windowEnd);
     const occs = expandRecurring(rev, ws, we);
     for (const occ of occs) {
@@ -2904,6 +2907,42 @@ async function refreshAllBriefings() {
   }
 }
 
+function buildWeatherIconsBar() {
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const wx = wxDailyCache[todayStr] || {};
+  if (!Object.keys(wx).length) return '';
+
+  const precip = wx.precip ?? null;
+  const uv     = wx.uv     ?? null;
+
+  const willRain    = precip !== null && precip >= 40;
+  const goodLaundry = precip !== null && precip < 20 && uv !== null;
+  const uvHigh      = uv !== null && uv > 3;
+
+  // Lucide: check (circle-check-big path) and x (x icon) — all currentColor
+  const check = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+  const cross  = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+
+  const mkItem = (svg, badge, title) =>
+    `<span title="${title}" style="display:inline-flex;align-items:center;gap:3px;padding:.22rem .42rem;background:var(--bg-input);border:1px solid var(--border-lt);border-radius:3px;color:var(--text-mid)">${svg}${badge}</span>`;
+
+  // Lucide: umbrella, shirt, glasses — exact Lucide paths, currentColor
+  const umbrellaIco = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 12a11.05 11.05 0 0 0-22 0zm-5 7a3 3 0 0 1-6 0v-7"/></svg>`;
+  const shirtIco    = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"/></svg>`;
+  const glassesIco  = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="15" r="4"/><circle cx="18" cy="15" r="4"/><path d="M14 15a2 2 0 0 0-2-2 2 2 0 0 0-2 2"/><path d="M2.586 11.586A2 2 0 0 1 4 11h1"/><path d="M22 11h-1a2 2 0 0 0-1.414.586"/></svg>`;
+
+  const items = [
+    mkItem(umbrellaIco, willRain ? check : cross,
+      precip !== null ? `Chuva: ${precip}% — ${willRain ? 'levar guarda-chuva' : 'sem chuva prevista'}` : 'Sem dados de chuva'),
+    mkItem(shirtIco, goodLaundry ? check : cross,
+      precip !== null ? `Roupa: ${goodLaundry ? 'bom dia para secar' : 'não ideal (chuva ou sem dados de sol)'}` : 'Sem dados'),
+    mkItem(glassesIco, uvHigh ? check : cross,
+      uv !== null ? `UV ${uv.toFixed(1)} — ${uvHigh ? 'usar óculos de sol' : 'UV baixo'}` : 'Sem dados UV'),
+  ].join('');
+
+  return `<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.9rem;padding-bottom:.7rem;border-bottom:1px solid var(--border-lt)">${items}</div>`;
+}
+
 function renderBriefing(text, isSports) {
   // Only render if the active tab matches this briefing type
   if (isSports && activeBriefingTab !== 'sports') return;
@@ -2913,10 +2952,11 @@ function renderBriefing(text, isSports) {
   if (typeof text === 'string' && text.startsWith('<')) {
     body.innerHTML = text; return;
   }
-  const html = text.trim().split(/\n\n+/).map(p =>
+  const prose = text.trim().split(/\n\n+/).map(p =>
     `<p style="margin-bottom:.9rem">${p.trim()}</p>`
   ).join('');
-  body.innerHTML = html;
+  const iconsBar = !isSports ? buildWeatherIconsBar() : '';
+  body.innerHTML = iconsBar + prose;
 }
 
 
