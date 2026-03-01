@@ -2744,10 +2744,16 @@ function buildSportsBriefingPrompt() {
 
   if (!events.length) return null;
 
-  // Group by day
+  // Group by day — use local date string to avoid UTC-offset shifting allDay events
+  const localDateStr = d => {
+    const yy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    return `${yy}-${mm}-${dd}`;
+  };
   const days = {};
   events.forEach(e => {
-    const dayKey = e.start.toISOString().slice(0, 10);
+    const dayKey = localDateStr(e.start);
     if (!days[dayKey]) days[dayKey] = [];
     const timeStr = e.allDay ? 'All day' : fmtTime(e.start);
     days[dayKey].push(`${timeStr} — ${e.calName}: ${e.title}`);
@@ -2919,12 +2925,12 @@ function buildWeatherIconsBar() {
   const goodLaundry = precip !== null && precip < 20 && uv !== null;
   const uvHigh      = uv !== null && uv > 3;
 
-  // Lucide: check (circle-check-big path) and x (x icon) — all currentColor
-  const check = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+  // Lucide icons — all currentColor, no background box
+  const check = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
   const cross  = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
 
   const mkItem = (svg, badge, title) =>
-    `<span title="${title}" style="display:inline-flex;align-items:center;gap:3px;padding:.22rem .42rem;background:var(--bg-input);border:1px solid var(--border-lt);border-radius:3px;color:var(--text-mid)">${svg}${badge}</span>`;
+    `<span title="${title}" style="display:inline-flex;align-items:center;gap:3px;color:var(--text-mid)">${svg}${badge}</span>`;
 
   // Lucide: umbrella, shirt, glasses — exact Lucide paths, currentColor
   const umbrellaIco = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 12a11.05 11.05 0 0 0-22 0zm-5 7a3 3 0 0 1-6 0v-7"/></svg>`;
@@ -2933,14 +2939,14 @@ function buildWeatherIconsBar() {
 
   const items = [
     mkItem(umbrellaIco, willRain ? check : cross,
-      precip !== null ? `Chuva: ${precip}% — ${willRain ? 'levar guarda-chuva' : 'sem chuva prevista'}` : 'Sem dados de chuva'),
+      precip !== null ? `Rain: ${precip}% — ${willRain ? 'Bring an umbrella' : 'No rain expected'}` : 'No rain data'),
     mkItem(shirtIco, goodLaundry ? check : cross,
-      precip !== null ? `Roupa: ${goodLaundry ? 'bom dia para secar' : 'não ideal (chuva ou sem dados de sol)'}` : 'Sem dados'),
+      precip !== null ? `Laundry: ${goodLaundry ? 'Good day to dry clothes outside' : 'Not ideal (rain or no sun data)'}` : 'No weather data'),
     mkItem(glassesIco, uvHigh ? check : cross,
-      uv !== null ? `UV ${uv.toFixed(1)} — ${uvHigh ? 'usar óculos de sol' : 'UV baixo'}` : 'Sem dados UV'),
+      uv !== null ? `UV Index: ${uv.toFixed(1)} — ${uvHigh ? 'Wear sunglasses' : 'UV is low'}` : 'No UV data'),
   ].join('');
 
-  return `<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.9rem;padding-bottom:.7rem;border-bottom:1px solid var(--border-lt)">${items}</div>`;
+  return `<div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;margin-bottom:.9rem;padding-bottom:.7rem;border-bottom:1px solid var(--border-lt)">${items}</div>`;
 }
 
 function renderBriefing(text, isSports) {
