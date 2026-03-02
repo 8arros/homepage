@@ -2923,27 +2923,39 @@ function buildWeatherIconsBar() {
 
   const willRain    = precip !== null && precip >= 40;
   const goodLaundry = precip !== null && precip < 20 && uv !== null;
-  const uvHigh      = uv !== null && uv > 3;
+  // UV levels: none (<6), moderate (6-7), danger (8+)
+  const uvModerate  = uv !== null && uv >= 6 && uv < 8;
+  const uvDanger    = uv !== null && uv >= 8;
 
   // Lucide icons — all currentColor, no background box
   const check = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
   const cross  = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+  const checkRed = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c0392b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
   const mkItem = (svg, badge, title) =>
     `<span title="${title}" style="display:inline-flex;align-items:center;gap:3px;color:var(--text-mid)">${svg}${badge}</span>`;
+  const mkItemRed = (svg, badge, title) =>
+    `<span title="${title}" style="display:inline-flex;align-items:center;gap:3px;color:#c0392b">${svg}${badge}</span>`;
 
   // Lucide: umbrella, shirt, glasses — exact Lucide paths, currentColor
   const umbrellaIco = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 12a11.05 11.05 0 0 0-22 0zm-5 7a3 3 0 0 1-6 0v-7"/></svg>`;
   const shirtIco    = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"/></svg>`;
   const glassesIco  = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="15" r="4"/><circle cx="18" cy="15" r="4"/><path d="M14 15a2 2 0 0 0-2-2 2 2 0 0 0-2 2"/><path d="M2.586 11.586A2 2 0 0 1 4 11h1"/><path d="M22 11h-1a2 2 0 0 0-1.414.586"/></svg>`;
 
+  const uvTooltip = uv !== null
+    ? `UV Index: ${uv.toFixed(1)} — ${uvDanger ? 'Very high — wear sunglasses' : uvModerate ? 'High — wear sunglasses' : 'UV is low'}`
+    : 'No UV data';
+
+  const glassesItem = uvDanger
+    ? mkItemRed(glassesIco, checkRed, uvTooltip)
+    : mkItem(glassesIco, uvModerate ? check : cross, uvTooltip);
+
   const items = [
     mkItem(umbrellaIco, willRain ? check : cross,
       precip !== null ? `Rain: ${precip}% — ${willRain ? 'Bring an umbrella' : 'No rain expected'}` : 'No rain data'),
     mkItem(shirtIco, goodLaundry ? check : cross,
       precip !== null ? `Laundry: ${goodLaundry ? 'Good day to dry clothes outside' : 'Not ideal (rain or no sun data)'}` : 'No weather data'),
-    mkItem(glassesIco, uvHigh ? check : cross,
-      uv !== null ? `UV Index: ${uv.toFixed(1)} — ${uvHigh ? 'Wear sunglasses' : 'UV is low'}` : 'No UV data'),
+    glassesItem,
   ].join('');
 
   return `<div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;margin-bottom:.9rem;padding-bottom:.7rem;border-bottom:1px solid var(--border-lt)">${items}</div>`;
