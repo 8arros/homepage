@@ -2723,7 +2723,7 @@ function buildSportsBriefingPrompt() {
 
   // Get sports events for next 7 days
   const windowStart = period !== 'morning' ? now : today;
-  const windowEnd = addDays(today, 7);
+  const windowEnd = addDays(today, 3);
 
   if (!sportsRawCache.length) return null;
 
