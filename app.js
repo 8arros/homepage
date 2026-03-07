@@ -3047,7 +3047,12 @@ function renderTennisBlock(tennisData) {
       for (const match of matchList) {
         const mEl = document.createElement('div');
         mEl.style.cssText = 'font-size:.83rem;padding:.15rem 0 .15rem .6rem;line-height:1.4';
-        mEl.textContent = match.trim();
+        // Clean up set scores: "[3-6
+4-6]" → "[3-6, 4-6]"
+        mEl.textContent = match.trim().replace(/\[([^\]]+)\]/g, (_, sets) =>
+          '[' + sets.replace(/\s*
+\s*/g, ', ').replace(/,\s*,/g, ',') + ']'
+        );
         tEl.appendChild(mEl);
       }
       dayEl.appendChild(tEl);
