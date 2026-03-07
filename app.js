@@ -2673,7 +2673,15 @@ let sportsRawCache = [];
 let _sportsLoading = false;
 
 async function loadAllSportsIcs() {
-  if (_sportsLoading) return;
+  if (_sportsLoading) {
+    // Wait for the existing load to finish instead of returning immediately
+    await new Promise(resolve => {
+      const check = setInterval(() => {
+        if (!_sportsLoading) { clearInterval(check); resolve(); }
+      }, 200);
+    });
+    return;
+  }
   _sportsLoading = true;
   try {
     const cals = loadSportsCalendars();
