@@ -2998,7 +2998,7 @@ function renderTennisBlock(tennisData) {
 
   if (!tennisData || tennisData === 'No top player matches found.') return;
 
-  const sections = tennisData.split(/(?=Today —|Tomorrow —|Today —|Tomorrow —)/);
+  const sections = tennisData.split(/(?=Today|Tomorrow)/).filter(s => /^(Today|Tomorrow)/.test(s.trim()));
   const parts = [];
 
   for (const section of sections) {
