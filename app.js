@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.8';
+const APP_VERSION = '5.9';
 
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
@@ -3029,12 +3029,12 @@ function renderTennisBlock(tennisData) {
 
   const block = document.createElement('div');
   block.className = 'tennis-block';
-  block.style.cssText = 'margin-top:.75rem';
+  block.style.cssText = 'margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)';
 
   for (const { intro, matches } of parts) {
     const header = document.createElement('p');
     header.style.cssText = 'margin:0 0 .35rem 0;font-size:.8rem;font-weight:600;color:var(--text-muted,#888);text-transform:uppercase;letter-spacing:.05em';
-    header.textContent = '\u1f3be ' + intro;
+    header.textContent = '🎾 ' + intro;
     block.appendChild(header);
 
     const list = document.createElement('ul');
