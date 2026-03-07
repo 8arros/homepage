@@ -3003,21 +3003,25 @@ function renderTennisBlock(tennisData) {
 
   for (const section of sections) {
     if (!section.trim()) continue;
-    const labelMatch = section.match(/^(Today|Tomorrow)\s*[—-]/);
+    const labelMatch = section.match(/^(Today|Tomorrow)\s*[\u2014-]/);
     if (!labelMatch) continue;
     const label = labelMatch[1];
-    const rest = section.replace(/^(Today|Tomorrow)\s*[—-]\s*/, '');
+    const rest = section.replace(/^(Today|Tomorrow)\s*[\u2014-]\s*/, '');
+    const seen = new Set();
     const allMatches = [];
     for (const t of rest.split(' | ')) {
       const colonIdx = t.indexOf(':');
       if (colonIdx === -1) continue;
       const matchList = t.slice(colonIdx + 1).trim().split(', ');
-      allMatches.push(...matchList.map(m => m.trim()).filter(Boolean));
+      for (const m of matchList) {
+        const key = m.trim().toLowerCase();
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        allMatches.push(m.trim());
+      }
     }
     if (!allMatches.length) continue;
-    const intro = label === 'Today'
-      ? 'Still to come on the courts today'
-      : 'Tomorrow the tennis action continues';
+    const intro = label === 'Today' ? 'Today' : 'Tomorrow';
     parts.push({ intro, matches: allMatches });
   }
 
@@ -3025,16 +3029,23 @@ function renderTennisBlock(tennisData) {
 
   const block = document.createElement('div');
   block.className = 'tennis-block';
-  block.style.cssText = 'margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)';
+  block.style.cssText = 'margin-top:.75rem';
 
   for (const { intro, matches } of parts) {
-    const p = document.createElement('p');
-    p.style.cssText = 'margin-bottom:.9rem;font-size:.9rem;line-height:1.6';
-    const matchStr = matches.length === 1
-      ? matches[0]
-      : matches.slice(0, -1).join(', ') + ' and ' + matches[matches.length - 1];
-    p.textContent = intro + ': ' + matchStr + '.';
-    block.appendChild(p);
+    const header = document.createElement('p');
+    header.style.cssText = 'margin:0 0 .35rem 0;font-size:.8rem;font-weight:600;color:var(--text-muted,#888);text-transform:uppercase;letter-spacing:.05em';
+    header.textContent = '\u1f3be ' + intro;
+    block.appendChild(header);
+
+    const list = document.createElement('ul');
+    list.style.cssText = 'margin:0 0 .75rem 0;padding:0;list-style:none';
+    for (const m of matches) {
+      const li = document.createElement('li');
+      li.style.cssText = 'font-size:.875rem;line-height:1.55;padding:.05rem 0';
+      li.textContent = m;
+      list.appendChild(li);
+    }
+    block.appendChild(list);
   }
 
   body.appendChild(block);
