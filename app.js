@@ -2993,75 +2993,52 @@ function renderTennisBlock(tennisData) {
   const body = document.getElementById('briefingBody');
   if (!body) return;
 
-  // Remove existing tennis block if any
   const existing = body.querySelector('.tennis-block');
   if (existing) existing.remove();
 
   if (!tennisData || tennisData === 'No top player matches found.') return;
 
-  // Parse "Today — Tournament: P1 vs P2 (Round, HH:MM), ... Tomorrow — ..."
-  const block = document.createElement('div');
-  block.className = 'tennis-block';
-  block.style.cssText = 'margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border)';
+  const sections = tennisData.split(/(?=Today —|Tomorrow —|Today —|Tomorrow —)/);
+  const parts = [];
 
-  const title = document.createElement('div');
-  title.style.cssText = 'font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mid);margin-bottom:.6rem';
-  title.textContent = 'Tennis';
-  block.appendChild(title);
-
-  // Split into Today / Tomorrow sections
-  const sections = tennisData.split(/(?=Today —|Tomorrow —)/);
   for (const section of sections) {
     if (!section.trim()) continue;
-    const labelMatch = section.match(/^(Today|Tomorrow) —/);
+    const labelMatch = section.match(/^(Today|Tomorrow)\s*[—-]/);
     if (!labelMatch) continue;
     const label = labelMatch[1];
-    const rest = section.replace(/^(Today|Tomorrow) —\s*/, '');
-
-    const dayEl = document.createElement('div');
-    dayEl.style.cssText = 'margin-bottom:.5rem';
-
-    const dayLabel = document.createElement('span');
-    dayLabel.style.cssText = 'font-weight:600;font-size:.85rem;';
-    dayLabel.textContent = label + ' ';
-    dayEl.appendChild(dayLabel);
-
-    // Split by " | " for different tournaments
-    const tournaments = rest.split(' | ');
-    for (const t of tournaments) {
+    const rest = section.replace(/^(Today|Tomorrow)\s*[—-]\s*/, '');
+    const allMatches = [];
+    for (const t of rest.split(' | ')) {
       const colonIdx = t.indexOf(':');
       if (colonIdx === -1) continue;
-      const tournamentName = t.slice(0, colonIdx).trim();
-      const matches = t.slice(colonIdx + 1).trim();
-
-      const tEl = document.createElement('div');
-      tEl.style.cssText = 'margin-top:.3rem;margin-left:.2rem';
-
-      const tName = document.createElement('span');
-      tName.style.cssText = 'font-size:.78rem;color:var(--text-mid);font-style:italic';
-      tName.textContent = tournamentName;
-      tEl.appendChild(tName);
-
-      // Each match separated by ", "
-      const matchList = matches.split(', ');
-      for (const match of matchList) {
-        const mEl = document.createElement('div');
-        mEl.style.cssText = 'font-size:.83rem;padding:.15rem 0 .15rem .6rem;line-height:1.4';
-        // Clean up set scores: "[3-6
-4-6]" → "[3-6, 4-6]"
-        mEl.textContent = match.trim().replace(/\[([^\]]+)\]/g, (_, sets) =>
-          '[' + sets.replace(/\s*
-\s*/g, ', ').replace(/,\s*,/g, ',') + ']'
-        );
-        tEl.appendChild(mEl);
-      }
-      dayEl.appendChild(tEl);
+      const matchList = t.slice(colonIdx + 1).trim().split(', ');
+      allMatches.push(...matchList.map(m => m.trim()).filter(Boolean));
     }
-    block.appendChild(dayEl);
+    if (!allMatches.length) continue;
+    const intro = label === 'Today'
+      ? 'Still to come on the courts today'
+      : 'Tomorrow the tennis action continues';
+    parts.push({ intro, matches: allMatches });
   }
+
+  if (!parts.length) return;
+
+  const block = document.createElement('div');
+  block.className = 'tennis-block';
+  block.style.cssText = 'margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)';
+
+  for (const { intro, matches } of parts) {
+    const p = document.createElement('p');
+    p.style.cssText = 'margin-bottom:.9rem;font-size:.9rem;line-height:1.6';
+    const matchStr = matches.length === 1
+      ? matches[0]
+      : matches.slice(0, -1).join(', ') + ' and ' + matches[matches.length - 1];
+    p.textContent = intro + ': ' + matchStr + '.';
+    block.appendChild(p);
+  }
+
   body.appendChild(block);
 }
-
 function renderBriefing(text, isSports) {
   // Only render if the active tab matches this briefing type
   if (isSports && activeBriefingTab !== 'sports') return;
