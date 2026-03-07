@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.9';
+const APP_VERSION = '5.10';
 
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
@@ -2803,7 +2803,9 @@ async function fetchTennisData() {
     const res = await authFetch(`${WORKER_URL}/tennis`, { method: 'GET' });
     if (!res.ok) return null;
     const data = await res.json();
-    return data.tennis || null;
+    if (data.error) return null;
+    // Return structured object { today: [...], tomorrow: [...] }
+    return (data.today || data.tomorrow) ? data : null;
   } catch {
     return null;
   }
@@ -2828,7 +2830,7 @@ async function loadSportsBriefing(force = false) {
     const cachedText = KVStore.getItem(SPORTS_BRIEFING_KEY);
     if (cachedKey === cacheKey && cachedText) {
       renderBriefing(cachedText, true);
-      renderTennisBlock(KVStore.getItem('tennis_cache') || '');
+      try { renderTennisBlock(JSON.parse(KVStore.getItem('tennis_cache') || 'null')); } catch { renderTennisBlock(null); }
       return;
     }
   }
@@ -2867,7 +2869,7 @@ async function loadSportsBriefing(force = false) {
     const text = data?.content?.[0]?.text || 'Could not generate the sports briefing.';
     KVStore.setItem(SPORTS_BRIEFING_KEY, text);
     KVStore.setItem(SPORTS_BRIEFING_DATE_KEY, cacheKey);
-    KVStore.setItem('tennis_cache', tennisData || '');
+    KVStore.setItem('tennis_cache', JSON.stringify(tennisData || null));
     KVStore.setItem('tennis_cache_date', cacheKey);
     renderBriefing(text, true);
     renderTennisBlock(tennisData);
@@ -2996,57 +2998,58 @@ function renderTennisBlock(tennisData) {
   const existing = body.querySelector('.tennis-block');
   if (existing) existing.remove();
 
-  if (!tennisData || tennisData === 'No top player matches found.') return;
-
-  const sections = tennisData.split(/(?=Today|Tomorrow)/).filter(s => /^(Today|Tomorrow)/.test(s.trim()));
-  const parts = [];
-
-  for (const section of sections) {
-    if (!section.trim()) continue;
-    const labelMatch = section.match(/^(Today|Tomorrow)\s*[\u2014-]/);
-    if (!labelMatch) continue;
-    const label = labelMatch[1];
-    const rest = section.replace(/^(Today|Tomorrow)\s*[\u2014-]\s*/, '');
-    const seen = new Set();
-    const allMatches = [];
-    for (const t of rest.split(' | ')) {
-      const colonIdx = t.indexOf(':');
-      if (colonIdx === -1) continue;
-      const matchList = t.slice(colonIdx + 1).trim().split(', ');
-      for (const m of matchList) {
-        const key = m.trim().toLowerCase();
-        if (!key || seen.has(key)) continue;
-        seen.add(key);
-        allMatches.push(m.trim());
-      }
-    }
-    if (!allMatches.length) continue;
-    const intro = label === 'Today' ? 'Today' : 'Tomorrow';
-    parts.push({ intro, matches: allMatches });
-  }
-
-  if (!parts.length) return;
+  const today = tennisData.today || [];
+  const tomorrow = tennisData.tomorrow || [];
+  if (!today.length && !tomorrow.length) return;
 
   const block = document.createElement('div');
   block.className = 'tennis-block';
   block.style.cssText = 'margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)';
 
-  for (const { intro, matches } of parts) {
-    const header = document.createElement('p');
-    header.style.cssText = 'margin:0 0 .35rem 0;font-size:.8rem;font-weight:600;color:var(--text-muted,#888);text-transform:uppercase;letter-spacing:.05em';
-    header.textContent = '🎾 ' + intro;
-    block.appendChild(header);
+  const renderSection = (tournaments, label) => {
+    if (!tournaments.length) return;
 
-    const list = document.createElement('ul');
-    list.style.cssText = 'margin:0 0 .75rem 0;padding:0;list-style:none';
-    for (const m of matches) {
-      const li = document.createElement('li');
-      li.style.cssText = 'font-size:.875rem;line-height:1.55;padding:.05rem 0';
-      li.textContent = m;
-      list.appendChild(li);
+    // Intro text
+    const tournamentNames = tournaments.map(t => t.name);
+    const nameList = tournamentNames.length === 1
+      ? tournamentNames[0]
+      : tournamentNames.slice(0,-1).join(', ') + ' e ' + tournamentNames[tournamentNames.length-1];
+    const introText = label === 'today'
+      ? `Hoje podes seguir os seguintes torneios: ${nameList}.`
+      : `Amanhã podes seguir os seguintes torneios: ${nameList}.`;
+
+    const intro = document.createElement('p');
+    intro.style.cssText = 'margin:0 0 .75rem 0;font-size:.9rem;line-height:1.6';
+    intro.textContent = introText;
+    block.appendChild(intro);
+
+    for (const t of tournaments) {
+      // Tournament name header
+      const tHeader = document.createElement('p');
+      tHeader.style.cssText = 'margin:0 0 .3rem 0;font-size:.85rem;font-weight:600';
+      tHeader.textContent = t.name;
+      block.appendChild(tHeader);
+
+      const list = document.createElement('ul');
+      list.style.cssText = 'margin:0 0 .75rem 0;padding:0 0 0 .1rem;list-style:none';
+
+      const addMatches = (matches, tourLabel) => {
+        for (const m of matches) {
+          const li = document.createElement('li');
+          li.style.cssText = 'font-size:.875rem;line-height:1.6;padding:.05rem 0;color:var(--text)';
+          li.textContent = `${tourLabel}  ${m.p1} vs ${m.p2} (${m.time})`;
+          list.appendChild(li);
+        }
+      };
+
+      if (t.atp?.length) addMatches(t.atp, 'ATP');
+      if (t.wta?.length) addMatches(t.wta, 'WTA');
+      block.appendChild(list);
     }
-    block.appendChild(list);
-  }
+  };
+
+  renderSection(today, 'today');
+  renderSection(tomorrow, 'tomorrow');
 
   body.appendChild(block);
 }
