@@ -2798,16 +2798,9 @@ Rules:
 - Write in English`;
 }
 
-async function fetchTennisData(apiKey) {
-  const today    = new Date();
-  const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
-  const fmt = d => d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+async function fetchTennisData() {
   try {
-    const res = await authFetch(`${WORKER_URL}/tennis`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
-      body: JSON.stringify({ date: fmt(today), tomorrow: fmt(tomorrow) }),
-    });
+    const res = await authFetch(`${WORKER_URL}/tennis`, { method: 'GET' });
     if (!res.ok) return null;
     const data = await res.json();
     return data.tennis || null;
@@ -2846,7 +2839,7 @@ async function loadSportsBriefing(force = false) {
 
   try {
     // Fetch tennis first, then briefing sequentially to avoid rate limits
-    const tennisData = await fetchTennisData(apiKey);
+    const tennisData = await fetchTennisData();
     await new Promise(r => setTimeout(r, 2000));
     const prompt = buildSportsBriefingPrompt();
 
@@ -2863,13 +2856,12 @@ ${tennisData}`
       return;
     }
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await authFetch(`${WORKER_URL}/claude`, {
       method: 'POST',
       headers: {
         'Content-Type':      'application/json',
         'x-api-key':         apiKey,
         'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
         model:      'claude-sonnet-4-20250514',
