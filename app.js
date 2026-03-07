@@ -2789,7 +2789,7 @@ Rules:
 - Group by sport naturally: football first, then F1, then tennis
 - For football: mention the teams, competition, day and kick-off time. Highlight big matches (derbies, top teams clashing, Champions League knockout games)
 - For F1: mention which GP, what sessions are coming (practice, qualifying, race) and times
-- For tennis: write a dedicated paragraph. List ALL matches from the live tennis data, each on its own sentence: "Alcaraz vs Dimitrov (R64, 23:10)". Never summarise or skip players. Include every single match listed.
+- Skip tennis — it is shown separately below the briefing.
 - All times must be in Lisbon time (already provided)
 - ${period === 'afternoon' ? 'Focus on remaining events today and upcoming days' : period === 'evening' ? 'Focus on tomorrow and the coming days' : 'Cover today and the days ahead'}
 - Skip sports with no events in the window
@@ -2828,6 +2828,7 @@ async function loadSportsBriefing(force = false) {
     const cachedText = KVStore.getItem(SPORTS_BRIEFING_KEY);
     if (cachedKey === cacheKey && cachedText) {
       renderBriefing(cachedText, true);
+      renderTennisBlock(KVStore.getItem('tennis_cache') || '');
       return;
     }
   }
@@ -2843,16 +2844,7 @@ async function loadSportsBriefing(force = false) {
     await new Promise(r => setTimeout(r, 2000));
     const prompt = buildSportsBriefingPrompt();
 
-    // Tennis is appended as a strict block the model must reproduce verbatim
-    const tennisSection = tennisData
-      ? `
-
---- TENNIS ---
-After your football and F1 paragraphs, add a tennis section. Copy this data into your response EXACTLY as written below, only adding a one-line intro like "At Indian Wells today and tomorrow:". Do not summarise, do not skip any match, do not paraphrase player names:
-${tennisData}`
-      : '';
-
-    const fullPrompt = (prompt || '') + tennisSection;
+    const fullPrompt = prompt || '';
     if (!fullPrompt.trim()) {
       renderBriefing('<div class="td-empty" style="padding-top:1rem">No upcoming sports events found.</div>', true);
       return;
@@ -2875,7 +2867,10 @@ ${tennisData}`
     const text = data?.content?.[0]?.text || 'Could not generate the sports briefing.';
     KVStore.setItem(SPORTS_BRIEFING_KEY, text);
     KVStore.setItem(SPORTS_BRIEFING_DATE_KEY, cacheKey);
+    KVStore.setItem('tennis_cache', tennisData || '');
+    KVStore.setItem('tennis_cache_date', cacheKey);
     renderBriefing(text, true);
+    renderTennisBlock(tennisData);
   } catch (e) {
     if (activeBriefingTab === 'sports') body.innerHTML = '<div class="td-empty" style="padding-top:1rem;color:var(--err)">Error generating sports briefing.</div>';
     console.error('Sports briefing error:', e);
@@ -2991,6 +2986,75 @@ function buildWeatherIconsBar() {
   ].join('');
 
   return `<div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;margin-bottom:.9rem;padding-bottom:.7rem;border-bottom:1px solid var(--border-lt)">${items}</div>`;
+}
+
+function renderTennisBlock(tennisData) {
+  if (!tennisData || activeBriefingTab !== 'sports') return;
+  const body = document.getElementById('briefingBody');
+  if (!body) return;
+
+  // Remove existing tennis block if any
+  const existing = body.querySelector('.tennis-block');
+  if (existing) existing.remove();
+
+  if (!tennisData || tennisData === 'No top player matches found.') return;
+
+  // Parse "Today — Tournament: P1 vs P2 (Round, HH:MM), ... Tomorrow — ..."
+  const block = document.createElement('div');
+  block.className = 'tennis-block';
+  block.style.cssText = 'margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border)';
+
+  const title = document.createElement('div');
+  title.style.cssText = 'font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mid);margin-bottom:.6rem';
+  title.textContent = 'Tennis';
+  block.appendChild(title);
+
+  // Split into Today / Tomorrow sections
+  const sections = tennisData.split(/(?=Today —|Tomorrow —)/);
+  for (const section of sections) {
+    if (!section.trim()) continue;
+    const labelMatch = section.match(/^(Today|Tomorrow) —/);
+    if (!labelMatch) continue;
+    const label = labelMatch[1];
+    const rest = section.replace(/^(Today|Tomorrow) —\s*/, '');
+
+    const dayEl = document.createElement('div');
+    dayEl.style.cssText = 'margin-bottom:.5rem';
+
+    const dayLabel = document.createElement('span');
+    dayLabel.style.cssText = 'font-weight:600;font-size:.85rem;';
+    dayLabel.textContent = label + ' ';
+    dayEl.appendChild(dayLabel);
+
+    // Split by " | " for different tournaments
+    const tournaments = rest.split(' | ');
+    for (const t of tournaments) {
+      const colonIdx = t.indexOf(':');
+      if (colonIdx === -1) continue;
+      const tournamentName = t.slice(0, colonIdx).trim();
+      const matches = t.slice(colonIdx + 1).trim();
+
+      const tEl = document.createElement('div');
+      tEl.style.cssText = 'margin-top:.3rem;margin-left:.2rem';
+
+      const tName = document.createElement('span');
+      tName.style.cssText = 'font-size:.78rem;color:var(--text-mid);font-style:italic';
+      tName.textContent = tournamentName;
+      tEl.appendChild(tName);
+
+      // Each match separated by ", "
+      const matchList = matches.split(', ');
+      for (const match of matchList) {
+        const mEl = document.createElement('div');
+        mEl.style.cssText = 'font-size:.83rem;padding:.15rem 0 .15rem .6rem;line-height:1.4';
+        mEl.textContent = match.trim();
+        tEl.appendChild(mEl);
+      }
+      dayEl.appendChild(tEl);
+    }
+    block.appendChild(dayEl);
+  }
+  body.appendChild(block);
 }
 
 function renderBriefing(text, isSports) {
