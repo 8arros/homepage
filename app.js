@@ -2,9 +2,8 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.11';
+const APP_VERSION = '5.12';
 
-const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
 const KVStore = (() => {
   const cache = new Map();
@@ -45,7 +44,7 @@ const KVStore = (() => {
       opts.body = JSON.stringify(body);
     }
     try {
-      const res = await authFetch(`${KV_WORKER_URL}${path}`, opts);
+      const res = await authFetch(`${WORKER_URL}${path}`, opts);
       return await res.json();
     } catch (e) {
       console.warn('[KVStore] network error:', e.message);
@@ -2786,7 +2785,7 @@ ${lines}
 Rules:
 - Start with "${periodGreeting}" and a brief overview of what's coming up
 - 2–4 short paragraphs, plain prose, no bullet points, no headers, no bold, no markdown
-- Group by sport naturally: football first, then F1, then tennis
+- Group by sport naturally: football first, then F1
 - For football: mention the teams, competition, day and kick-off time. Highlight big matches (derbies, top teams clashing, Champions League knockout games)
 - For F1: mention which GP, what sessions are coming (practice, qualifying, race) and times
 - Skip tennis — it is shown separately below the briefing.
@@ -2870,7 +2869,6 @@ async function loadSportsBriefing(force = false) {
     KVStore.setItem(SPORTS_BRIEFING_KEY, text);
     KVStore.setItem(SPORTS_BRIEFING_DATE_KEY, cacheKey);
     KVStore.setItem('tennis_cache', JSON.stringify(tennisData || null));
-    KVStore.setItem('tennis_cache_date', cacheKey);
     renderBriefing(text, true);
     renderTennisBlock(tennisData);
   } catch (e) {
