@@ -2789,7 +2789,7 @@ Rules:
 - Group by sport naturally: football first, then F1, then tennis
 - For football: mention the teams, competition, day and kick-off time. Highlight big matches (derbies, top teams clashing, Champions League knockout games)
 - For F1: mention which GP, what sessions are coming (practice, qualifying, race) and times
-- For tennis: mention tournament name, stage, and notable players if the event title includes them
+- For tennis: use the live tennis data section below. Mention tournament, round, BOTH players (full names), and kick-off time in Lisbon time. Always say who plays who.
 - All times must be in Lisbon time (already provided)
 - ${period === 'afternoon' ? 'Focus on remaining events today and upcoming days' : period === 'evening' ? 'Focus on tomorrow and the coming days' : 'Cover today and the days ahead'}
 - Skip sports with no events in the window
