@@ -2837,11 +2837,10 @@ async function loadSportsBriefing(force = false) {
   if (btn) btn.disabled = true;
 
   try {
-    // Fetch live tennis data and ICS-based prompt in parallel
-    const [tennisData, prompt] = await Promise.all([
-      fetchTennisData(apiKey),
-      Promise.resolve(buildSportsBriefingPrompt()),
-    ]);
+    // Fetch tennis first, then briefing sequentially to avoid rate limits
+    const tennisData = await fetchTennisData(apiKey);
+    await new Promise(r => setTimeout(r, 2000));
+    const prompt = buildSportsBriefingPrompt();
 
     const tennisSection = tennisData
       ? `
