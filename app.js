@@ -2790,6 +2790,24 @@ Rules:
 - Write in English`;
 }
 
+async function fetchTennisData(apiKey) {
+  const today    = new Date();
+  const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+  const fmt = d => d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  try {
+    const res = await authFetch(`${WORKER_URL}/tennis`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+      body: JSON.stringify({ date: fmt(today), tomorrow: fmt(tomorrow) }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.tennis || null;
+  } catch {
+    return null;
+  }
+}
+
 async function loadSportsBriefing(force = false) {
   const apiKey = getApiKey();
   if (!apiKey) {
@@ -2819,8 +2837,21 @@ async function loadSportsBriefing(force = false) {
   if (btn) btn.disabled = true;
 
   try {
-    const prompt = buildSportsBriefingPrompt();
-    if (!prompt) {
+    // Fetch live tennis data and ICS-based prompt in parallel
+    const [tennisData, prompt] = await Promise.all([
+      fetchTennisData(apiKey),
+      Promise.resolve(buildSportsBriefingPrompt()),
+    ]);
+
+    const tennisSection = tennisData
+      ? `
+
+Live tennis data (from web search):
+${tennisData}`
+      : '';
+
+    const fullPrompt = (prompt || '') + tennisSection;
+    if (!fullPrompt.trim()) {
       renderBriefing('<div class="td-empty" style="padding-top:1rem">No upcoming sports events found.</div>', true);
       return;
     }
@@ -2836,7 +2867,7 @@ async function loadSportsBriefing(force = false) {
       body: JSON.stringify({
         model:      'claude-sonnet-4-20250514',
         max_tokens: 800,
-        messages:   [{ role: 'user', content: prompt }]
+        messages:   [{ role: 'user', content: fullPrompt }]
       })
     });
     const data = await res.json();
