@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.12';
+const APP_VERSION = '5.14';
 
 const WORKER_URL = API_BASE;
 const KVStore = (() => {
@@ -2824,12 +2824,27 @@ async function loadSportsBriefing(force = false) {
   }
 
   const cacheKey = getSportsBriefingCacheKey();
+  // Tennis uses its own hourly cache key so it refreshes independently of the briefing period
+  const _tn = new Date();
+  const tennisCacheKey = `${_tn.getFullYear()}-${String(_tn.getMonth()+1).padStart(2,'0')}-${String(_tn.getDate()).padStart(2,'0')}_${String(_tn.getHours()).padStart(2,'0')}`;
+
   if (!force) {
     const cachedKey  = KVStore.getItem(SPORTS_BRIEFING_DATE_KEY);
     const cachedText = KVStore.getItem(SPORTS_BRIEFING_KEY);
+    const cachedTennisKey = KVStore.getItem('tennis_cache_date');
     if (cachedKey === cacheKey && cachedText) {
       renderBriefing(cachedText, true);
-      try { renderTennisBlock(JSON.parse(KVStore.getItem('tennis_cache') || 'null')); } catch { renderTennisBlock(null); }
+      if (cachedTennisKey === tennisCacheKey) {
+        // Both briefing and tennis are fresh
+        try { renderTennisBlock(JSON.parse(KVStore.getItem('tennis_cache') || 'null')); } catch { renderTennisBlock(null); }
+        return;
+      }
+      // Briefing cached but tennis hour has changed — refresh tennis only
+      fetchTennisData().then(td => {
+        KVStore.setItem('tennis_cache', JSON.stringify(td || null));
+        KVStore.setItem('tennis_cache_date', tennisCacheKey);
+        renderTennisBlock(td);
+      });
       return;
     }
   }
@@ -2869,6 +2884,7 @@ async function loadSportsBriefing(force = false) {
     KVStore.setItem(SPORTS_BRIEFING_KEY, text);
     KVStore.setItem(SPORTS_BRIEFING_DATE_KEY, cacheKey);
     KVStore.setItem('tennis_cache', JSON.stringify(tennisData || null));
+    KVStore.setItem('tennis_cache_date', tennisCacheKey);
     renderBriefing(text, true);
     renderTennisBlock(tennisData);
   } catch (e) {
@@ -3031,30 +3047,23 @@ function renderTennisBlock(tennisData) {
       const list = document.createElement('ul');
       list.style.cssText = 'margin:0 0 .75rem 0;padding:0;list-style:none';
 
-      const addMatches = (matches, showLabel) => {
+      // Only show ATP/WTA label if both are present in same tournament
+      const hasBoth = t.atp?.length && t.wta?.length;
+
+      const addMatches = (matches, tourLabel) => {
         for (const m of matches) {
           const li = document.createElement('li');
           li.style.cssText = 'line-height:1.6;padding:.05rem 0';
-          li.textContent = showLabel
-            ? `${m.p1} vs ${m.p2} (${m.time}) — ATP`
-            : `${m.p1} vs ${m.p2} (${m.time})`;
+          let text = `${m.p1} vs ${m.p2} (${m.time})`;
+          if (hasBoth) text += ` — ${tourLabel}`;
+          if (m.live) text += ' · in progress';
+          li.textContent = text;
           list.appendChild(li);
         }
       };
 
-      // Only show ATP/WTA label if both are present in same tournament
-      const hasBoth = t.atp?.length && t.wta?.length;
-      if (t.atp?.length) addMatches(t.atp, hasBoth);
-      if (t.wta?.length) {
-        for (const m of t.wta) {
-          const li = document.createElement('li');
-          li.style.cssText = 'line-height:1.6;padding:.05rem 0';
-          li.textContent = hasBoth
-            ? `${m.p1} vs ${m.p2} (${m.time}) — WTA`
-            : `${m.p1} vs ${m.p2} (${m.time})`;
-          list.appendChild(li);
-        }
-      }
+      if (t.atp?.length) addMatches(t.atp, 'ATP');
+      if (t.wta?.length) addMatches(t.wta, 'WTA');
       block.appendChild(list);
     }
   };
