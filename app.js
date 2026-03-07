@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.10';
+const APP_VERSION = '5.11';
 
 const KV_WORKER_URL = API_BASE;
 const WORKER_URL = API_BASE;
@@ -3004,46 +3004,59 @@ function renderTennisBlock(tennisData) {
 
   const block = document.createElement('div');
   block.className = 'tennis-block';
-  block.style.cssText = 'margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)';
+  block.style.cssText = 'margin-top:1rem';
 
   const renderSection = (tournaments, label) => {
     if (!tournaments.length) return;
 
-    // Intro text
     const tournamentNames = tournaments.map(t => t.name);
     const nameList = tournamentNames.length === 1
       ? tournamentNames[0]
-      : tournamentNames.slice(0,-1).join(', ') + ' e ' + tournamentNames[tournamentNames.length-1];
+      : tournamentNames.slice(0,-1).join(', ') + ' and ' + tournamentNames[tournamentNames.length-1];
     const introText = label === 'today'
-      ? `Hoje podes seguir os seguintes torneios: ${nameList}.`
-      : `Amanhã podes seguir os seguintes torneios: ${nameList}.`;
+      ? `On the courts today at ${nameList}:`
+      : `Tomorrow at ${nameList}:`;
 
     const intro = document.createElement('p');
-    intro.style.cssText = 'margin:0 0 .75rem 0;font-size:.9rem;line-height:1.6';
+    intro.style.cssText = 'margin:0 0 .6rem 0;line-height:1.6';
     intro.textContent = introText;
     block.appendChild(intro);
 
     for (const t of tournaments) {
-      // Tournament name header
-      const tHeader = document.createElement('p');
-      tHeader.style.cssText = 'margin:0 0 .3rem 0;font-size:.85rem;font-weight:600';
-      tHeader.textContent = t.name;
-      block.appendChild(tHeader);
+      if (tournaments.length > 1) {
+        const tHeader = document.createElement('p');
+        tHeader.style.cssText = 'margin:0 0 .25rem 0;font-weight:600';
+        tHeader.textContent = t.name;
+        block.appendChild(tHeader);
+      }
 
       const list = document.createElement('ul');
-      list.style.cssText = 'margin:0 0 .75rem 0;padding:0 0 0 .1rem;list-style:none';
+      list.style.cssText = 'margin:0 0 .75rem 0;padding:0;list-style:none';
 
-      const addMatches = (matches, tourLabel) => {
+      const addMatches = (matches, showLabel) => {
         for (const m of matches) {
           const li = document.createElement('li');
-          li.style.cssText = 'font-size:.875rem;line-height:1.6;padding:.05rem 0;color:var(--text)';
-          li.textContent = `${tourLabel}  ${m.p1} vs ${m.p2} (${m.time})`;
+          li.style.cssText = 'line-height:1.6;padding:.05rem 0';
+          li.textContent = showLabel
+            ? `${m.p1} vs ${m.p2} (${m.time}) — ATP`
+            : `${m.p1} vs ${m.p2} (${m.time})`;
           list.appendChild(li);
         }
       };
 
-      if (t.atp?.length) addMatches(t.atp, 'ATP');
-      if (t.wta?.length) addMatches(t.wta, 'WTA');
+      // Only show ATP/WTA label if both are present in same tournament
+      const hasBoth = t.atp?.length && t.wta?.length;
+      if (t.atp?.length) addMatches(t.atp, hasBoth);
+      if (t.wta?.length) {
+        for (const m of t.wta) {
+          const li = document.createElement('li');
+          li.style.cssText = 'line-height:1.6;padding:.05rem 0';
+          li.textContent = hasBoth
+            ? `${m.p1} vs ${m.p2} (${m.time}) — WTA`
+            : `${m.p1} vs ${m.p2} (${m.time})`;
+          list.appendChild(li);
+        }
+      }
       block.appendChild(list);
     }
   };
