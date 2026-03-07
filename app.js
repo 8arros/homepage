@@ -2789,7 +2789,7 @@ Rules:
 - Group by sport naturally: football first, then F1, then tennis
 - For football: mention the teams, competition, day and kick-off time. Highlight big matches (derbies, top teams clashing, Champions League knockout games)
 - For F1: mention which GP, what sessions are coming (practice, qualifying, race) and times
-- For tennis: use ONLY the live tennis data section at the bottom. Write a separate paragraph just for tennis. List every match explicitly as "Player A vs Player B (Round, HH:MM)". Never omit the opponent. If no time is available, omit the time but still include both players.
+- For tennis: write a dedicated paragraph. List ALL matches from the live tennis data, each on its own sentence: "Alcaraz vs Dimitrov (R64, 23:10)". Never summarise or skip players. Include every single match listed.
 - All times must be in Lisbon time (already provided)
 - ${period === 'afternoon' ? 'Focus on remaining events today and upcoming days' : period === 'evening' ? 'Focus on tomorrow and the coming days' : 'Cover today and the days ahead'}
 - Skip sports with no events in the window
@@ -2843,12 +2843,13 @@ async function loadSportsBriefing(force = false) {
     await new Promise(r => setTimeout(r, 2000));
     const prompt = buildSportsBriefingPrompt();
 
+    // Tennis is appended as a strict block the model must reproduce verbatim
     const tennisSection = tennisData
       ? `
 
---- LIVE TENNIS DATA (use this for the tennis paragraph, list every match with both players) ---
-${tennisData}
----`
+--- TENNIS ---
+After your football and F1 paragraphs, add a tennis section. Copy this data into your response EXACTLY as written below, only adding a one-line intro like "At Indian Wells today and tomorrow:". Do not summarise, do not skip any match, do not paraphrase player names:
+${tennisData}`
       : '';
 
     const fullPrompt = (prompt || '') + tennisSection;
@@ -2866,7 +2867,7 @@ ${tennisData}
       },
       body: JSON.stringify({
         model:      'claude-sonnet-4-20250514',
-        max_tokens: 800,
+        max_tokens: 1500,
         messages:   [{ role: 'user', content: fullPrompt }]
       })
     });
