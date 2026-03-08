@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.14';
+const APP_VERSION = '5.15';
 
 const WORKER_URL = API_BASE;
 const KVStore = (() => {
@@ -2720,8 +2720,8 @@ function buildSportsBriefingPrompt() {
   const fmtShort = d => d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
   const fmtTime  = d => `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 
-  // Get sports events for next 7 days
-  const windowStart = period !== 'morning' ? now : today;
+  // Use current time as window start so past events today are excluded
+  const windowStart = now;
   const windowEnd = addDays(today, 3);
 
   if (!sportsRawCache.length) return null;
@@ -2747,10 +2747,6 @@ function buildSportsBriefingPrompt() {
       }
     }
   }
-  events.sort((a, b) => a.start - b.start);
-
-  if (!events.length) return null;
-
   // Group by day — use local date string to avoid UTC-offset shifting allDay events
   const localDateStr = d => {
     const yy = d.getFullYear();
@@ -2758,8 +2754,20 @@ function buildSportsBriefingPrompt() {
     const dd = String(d.getDate()).padStart(2,'0');
     return `${yy}-${mm}-${dd}`;
   };
+
+  events.sort((a, b) => a.start - b.start);
+
+  // Deduplicate: same title + same day + same time from multiple calendars
+  const seen = new Set();
+  const deduped = events.filter(e => {
+    const key = `${localDateStr(e.start)}_${e.allDay ? 'allday' : fmtTime(e.start)}_${e.title}`;
+    if (seen.has(key)) return false;
+    seen.add(key); return true;
+  });
+
+  if (!deduped.length) return null;
   const days = {};
-  events.forEach(e => {
+  deduped.forEach(e => {
     const dayKey = localDateStr(e.start);
     if (!days[dayKey]) days[dayKey] = [];
     const timeStr = e.allDay ? 'All day' : fmtTime(e.start);
