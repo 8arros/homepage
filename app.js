@@ -2,7 +2,7 @@
 // ── App code — loaded dynamically after authentication ──
 // ═══════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '5.15';
+const APP_VERSION = '5.16';
 
 const WORKER_URL = API_BASE;
 const KVStore = (() => {
@@ -2786,7 +2786,9 @@ function buildSportsBriefingPrompt() {
 
   const periodGreeting = { morning: 'Good morning', afternoon: 'Good afternoon', evening: 'Good evening' }[period];
 
-  return `You are a sports-savvy personal assistant. Write a concise sports briefing based on this schedule of upcoming events (times are Lisbon/Portugal time):
+  const todayLabel = fmtDate(today);
+  return `You are a sports-savvy personal assistant. Write a concise sports briefing based on this schedule of upcoming events (times are Lisbon/Portugal time).
+Today is ${todayLabel}.
 
 ${lines}
 
